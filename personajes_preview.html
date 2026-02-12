@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Nahual: Duelo Arcano - Personajes</title>
+<style>
+body {
+	margin: 0;
+	background: #0d0a10;
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	align-items: center;
+	min-height: 100vh;
+	font-family: 'Segoe UI', sans-serif;
+	gap: 30px;
+	padding: 30px;
+}
+.card {
+	text-align: center;
+}
+canvas {
+	border: 2px solid #c49530;
+	border-radius: 8px;
+	background: #12101a;
+	box-shadow: 0 0 20px rgba(196, 149, 48, 0.3);
+}
+.name {
+	margin-top: 8px;
+	font-size: 18px;
+	font-weight: bold;
+	letter-spacing: 2px;
+}
+.desc {
+	font-size: 12px;
+	color: #888;
+	margin-top: 4px;
+}
+h1 {
+	width: 100%;
+	text-align: center;
+	color: #f2bf33;
+	font-size: 32px;
+	letter-spacing: 4px;
+	text-shadow: 0 0 20px rgba(242,191,51,0.4);
+}
+</style>
+</head>
+<body>
+<h1>NAHUAL: DUELO ARCANO</h1>
+
+<script>
+const CHARS = [
+	{ name: "MAGO", desc: "Hechicero clasico con magia estelar", color: [51,204,230] },
+	{ name: "HECHICERO", desc: "Maestro de las artes oscuras", color: [230,77,153] },
+	{ name: "CHAMAN", desc: "Guardian de espiritus ancestrales", color: [38,191,77] },
+	{ name: "NAHUAL", desc: "Guerrero jaguar con poder animal", color: [242,191,26] },
+	{ name: "BRUJO", desc: "Invocador de almas y huesos", color: [140,38,204] },
+	{ name: "SACERDOTE SOL", desc: "Portador del fuego sagrado", color: [255,140,26] },
+];
+
+// Colores base por personaje (robe color, dark, light, body/skin)
+const PALETTE = [
+	{ rc: [45,90,120], dc: [25,55,80], lc: [80,170,210], bc: [220,195,170] },   // Mago
+	{ rc: [80,30,70],  dc: [50,15,45], lc: [210,80,140], bc: [210,185,170] },   // Hechicero
+	{ rc: [50,100,55], dc: [30,65,35], lc: [60,180,80],  bc: [180,155,130] },   // Chaman
+	{ rc: [120,85,20], dc: [75,55,15], lc: [230,180,40], bc: [200,170,130] },   // Nahual
+	{ rc: [65,25,85],  dc: [40,15,55], lc: [130,50,190], bc: [220,200,180] },   // Brujo
+	{ rc: [140,90,15], dc: [90,58,10], lc: [255,200,50], bc: [215,185,155] },   // Sacerdote
+];
+
+const SCALE = 4.5;
+const W = 160;
+const H = 200;
+let time = 0;
+
+function col(r,g,b,a=1) { return `rgba(${r},${g},${b},${a})`; }
+function colArr(arr,a=1) { return `rgba(${arr[0]},${arr[1]},${arr[2]},${a})`; }
+function darken(c, amt) { return c.map(v => Math.max(0, Math.floor(v * (1-amt)))); }
+function lighten(c, amt) { return c.map(v => Math.min(255, Math.floor(v + (255-v)*amt))); }
+
+function drawCircle(ctx, x, y, r, color) {
+	ctx.beginPath();
+	ctx.arc(x, y, r, 0, Math.PI*2);
+	ctx.fillStyle = color;
+	ctx.fill();
+}
+
+function drawArc(ctx, x, y, r, start, end, color, width) {
+	ctx.beginPath();
+	ctx.arc(x, y, r, start, end);
+	ctx.strokeStyle = color;
+	ctx.lineWidth = width;
+	ctx.stroke();
+}
+
+function drawLine(ctx, x1, y1, x2, y2, color, width) {
+	ctx.beginPath();
+	ctx.moveTo(x1, y1);
+	ctx.lineTo(x2, y2);
+	ctx.strokeStyle = color;
+	ctx.lineWidth = width;
+	ctx.stroke();
+}
+
+function drawPoly(ctx, points, colors) {
+	ctx.beginPath();
+	ctx.moveTo(points[0][0], points[0][1]);
+	for (let i = 1; i < points.length; i++) ctx.lineTo(points[i][0], points[i][1]);
+	ctx.closePath();
+	ctx.fillStyle = colArr(colors[0]);
+	ctx.fill();
+}
+
+function drawPolyline(ctx, points, color, width) {
+	ctx.beginPath();
+	ctx.moveTo(points[0][0], points[0][1]);
+	for (let i = 1; i < points.length; i++) ctx.lineTo(points[i][0], points[i][1]);
+	ctx.strokeStyle = color;
+	ctx.lineWidth = width;
+	ctx.stroke();
+}
+
+// Shared helpers
+function drawCape(ctx, p, t) {
+	const fd = [1, 0]; // facing right
+	const cd = [-1, 0];
+	const cp = [0, -1];
+	const sw = Math.sin(t * 2.5) * 4;
+	const pts = [
+		[-5, -2], [5, -2],
+		[cd[0]*14 + cp[0]*(sw+6), cd[1]*14 + cp[1]*(sw+6) + 4],
+		[cd[0]*22 + cp[0]*sw, cd[1]*22 + cp[1]*sw + 10],
+		[cd[0]*14 + cp[0]*(sw-6), cd[1]*14 + cp[1]*(sw-6) + 4],
+	];
+	drawPoly(ctx, pts, [darken(p.dc, 0.15)]);
+	drawPolyline(ctx, [pts[0], pts[4], pts[3], pts[2], pts[1]], colArr(lighten(p.dc, 0.15), 0.6), 1);
+}
+
+function drawFeet(ctx, p, t) {
+	const fa = 0; // idle
+	drawCircle(ctx, -5, 14, 3.5, colArr(p.dc));
+	drawCircle(ctx, -3, 14, 2, colArr(darken(p.dc, 0.15)));
+	drawCircle(ctx, 5, 14, 3.5, colArr(p.dc));
+	drawCircle(ctx, 7, 14, 2, colArr(darken(p.dc, 0.15)));
+}
+
+function drawBody(ctx, p) {
+	drawPoly(ctx, [[-6,-3],[6,-3],[12,12],[-12,12]], [p.rc]);
+	drawPolyline(ctx, [[-6,-3],[-12,12],[12,12],[6,-3]], colArr(p.dc), 1.5);
+	// Pliegues
+	drawLine(ctx, -3, 4, -5, 12, colArr(p.dc, 0.35), 1);
+	drawLine(ctx, 3, 4, 5, 12, colArr(p.dc, 0.35), 1);
+	drawLine(ctx, 0, 5, 0, 12, colArr(p.dc, 0.2), 1);
+	// Cinturon
+	drawLine(ctx, -8, 3, 8, 3, colArr(p.dc), 2);
+	ctx.fillStyle = colArr(p.lc);
+	ctx.fillRect(-2, 1.5, 4, 3);
+	drawLine(ctx, -12, 12, 12, 12, colArr(lighten(p.dc, 0.1)), 1.5);
+}
+
+function drawHead(ctx, p) {
+	drawLine(ctx, 0, -4, 0, -3.5, colArr(darken(p.bc, 0.1)), 4);
+	drawCircle(ctx, 0, -11, 7.5, colArr(p.bc));
+	drawArc(ctx, 0, -11, 7.5, 0, Math.PI*2, colArr(p.dc), 1.5);
+}
+
+function drawEyes(ctx, iris, t) {
+	// Facing right
+	const eb = [3.5, -11];
+	const e1 = [eb[0], eb[1] - 2.8];
+	const e2 = [eb[0], eb[1] + 2.8];
+	// Whites
+	drawCircle(ctx, e1[0], e1[1], 2.2, 'white');
+	drawCircle(ctx, e2[0], e2[1], 2.2, 'white');
+	// Iris
+	drawCircle(ctx, e1[0]+0.5, e1[1], 1.4, colArr(iris));
+	drawCircle(ctx, e2[0]+0.5, e2[1], 1.4, colArr(iris));
+	// Pupils
+	drawCircle(ctx, e1[0]+0.7, e1[1], 0.7, col(13,13,26));
+	drawCircle(ctx, e2[0]+0.7, e2[1], 0.7, col(13,13,26));
+	// Highlights
+	drawCircle(ctx, e1[0]+0.2, e1[1]-0.5, 0.5, col(255,255,255,0.8));
+	drawCircle(ctx, e2[0]+0.2, e2[1]-0.5, 0.5, col(255,255,255,0.8));
+	// Eyebrows
+	const b1 = [e1[0]-0.5, e1[1]-2.5];
+	const b2 = [e2[0]-0.5, e2[1]-2.5];
+	drawLine(ctx, b1[0]-1.5, b1[1], b1[0]+1.5, b1[1]-0.5, col(64,51,38), 1.2);
+	drawLine(ctx, b2[0]+1.5, b2[1], b2[0]-1.5, b2[1]-0.5, col(64,51,38), 1.2);
+}
+
+function drawMouth(ctx) {
+	const mp = [5, -8.5];
+	drawArc(ctx, mp[0], mp[1], 1.2, 0.3, Math.PI-0.3, col(64,51,38), 1);
+}
+
+// Staff helper
+function drawStaff(ctx, t, staffCol, tipDraw) {
+	const sb = [0, 0]; // side offset
+	const sd = [0.92, -0.38]; // rotated facing
+	const bx = -7, by = 0;
+	const tx = bx + sd[0]*28 - 8, ty = by + sd[1]*28;
+	drawLine(ctx, bx, by, tx, ty, colArr(staffCol), 2.5);
+	tipDraw(ctx, tx, ty, t);
+}
+
+// ========================
+// DRAW EACH CHARACTER
+// ========================
+
+function drawMago(ctx, p, t) {
+	drawCape(ctx, p, t);
+	drawFeet(ctx, p, t);
+	// Staff with star
+	drawStaff(ctx, t, [115,77,38], (ctx, tx, ty, t) => {
+		const sg = Math.sin(t*4)*0.2+0.8;
+		drawCircle(ctx, tx, ty, 3, col(255,255,128,sg));
+		for (let i=0;i<4;i++) {
+			const a = t*1.5+i*Math.PI/2;
+			drawLine(ctx, tx+Math.cos(a)*3, ty+Math.sin(a)*3, tx+Math.cos(a)*6, ty+Math.sin(a)*6, col(255,255,153,sg*0.4), 1);
+		}
+	});
+	drawBody(ctx, p);
+	// Star emblem
+	drawCircle(ctx, 0, 7, 2.5, colArr(p.lc));
+	drawLine(ctx, 0, 4, 0, 10, colArr(p.lc), 1);
+	drawLine(ctx, -3, 7, 3, 7, colArr(p.lc), 1);
+	// Shoulder pads
+	drawCircle(ctx, -8, -2, 4, colArr(lighten(p.rc, 0.1)));
+	drawArc(ctx, -8, -2, 4, 0, Math.PI*2, colArr(p.dc), 1);
+	drawCircle(ctx, 8, -2, 4, colArr(lighten(p.rc, 0.1)));
+	drawArc(ctx, 8, -2, 4, 0, Math.PI*2, colArr(p.dc), 1);
+	drawHead(ctx, p);
+	drawEyes(ctx, [51,128,230], t);
+	drawMouth(ctx);
+	// Pointy hat
+	const hb = -16.5;
+	drawPoly(ctx, [[3,hb-18],[-11,hb+2],[11,hb+2]], [lighten(p.rc,0.2)]);
+	drawLine(ctx, -11, hb+2, 11, hb+2, colArr(p.dc), 3);
+	const sg2 = Math.sin(t*3)*0.3+0.7;
+	drawCircle(ctx, 3, hb-18, 2.5, col(255,255,128,sg2));
+	// Orbiting sparkles
+	for (let i=0;i<3;i++) {
+		const sa = t*2+i*Math.PI*2/3;
+		const sr = 20+Math.sin(t*3+i)*3;
+		const sx = Math.cos(sa)*sr, sy = Math.sin(sa)*sr;
+		const sparkle = Math.sin(t*8+i*2)*0.3+0.7;
+		drawCircle(ctx, sx, sy, 1.5, col(204,230,255,sparkle*0.4));
+		drawCircle(ctx, sx, sy, 0.8, col(255,255,255,sparkle*0.6));
+	}
+}
+
+function drawHechicero(ctx, p, t) {
+	drawCape(ctx, p, t);
+	drawFeet(ctx, p, t);
+	// Crystal staff
+	drawStaff(ctx, t, [89,64,102], (ctx, tx, ty, t) => {
+		const gp = Math.sin(t*3)*0.15+0.85;
+		drawCircle(ctx, tx, ty, 3, col(204,51,255,gp));
+		// Diamond shape
+		drawPoly(ctx, [[tx,ty-4],[tx+3,ty],[tx,ty+4],[tx-3,ty]], [[230,102,255]]);
+	});
+	drawBody(ctx, p);
+	// Gem emblem
+	drawPoly(ctx, [[0,4.5],[2.5,7],[0,9.5],[-2.5,7]], [p.lc]);
+	// Pointy shoulders
+	drawPoly(ctx, [[-5,-4],[-12,-3],[-7,1]], [lighten(p.rc,0.1)]);
+	drawPoly(ctx, [[5,-4],[12,-3],[7,1]], [lighten(p.rc,0.1)]);
+	drawHead(ctx, p);
+	drawEyes(ctx, [204,51,102], t);
+	drawMouth(ctx);
+	// Hood with horns
+	const hb = -16.5;
+	drawPoly(ctx, [[0,hb-10],[-10,hb],[-8,hb+5],[8,hb+5],[10,hb]], [lighten(p.rc,0.1)]);
+	drawLine(ctx, -7, hb-1, -12, hb-13, colArr(p.dc), 2.5);
+	drawLine(ctx, 7, hb-1, 12, hb-13, colArr(p.dc), 2.5);
+	const hg = Math.sin(t*2.5)*0.3+0.7;
+	drawCircle(ctx, -12, hb-13, 2, col(255,77,128,hg));
+	drawCircle(ctx, 12, hb-13, 2, col(255,77,128,hg));
+	// Dark mist
+	for (let i=0;i<5;i++) {
+		const ma = t*1.5+i*1.3;
+		const mx = Math.sin(ma)*12, my = Math.cos(ma*0.7)*4;
+		drawCircle(ctx, mx, 14+my, 3+Math.sin(t+i), col(77,26,102,0.08));
+	}
+}
+
+function drawChaman(ctx, p, t) {
+	// Feather cape
+	const featherCols = [[204,51,26],[26,153,51],[230,179,26],[26,153,51],[204,51,26]];
+	for (let i=0;i<5;i++) {
+		const off = (i-2)*4;
+		const sw = Math.sin(t*3)*3;
+		const bx = off, by = -1;
+		const tx = -(16+(i%2)*4) + (off+sw), ty = 8;
+		drawLine(ctx, bx, by, tx, ty, colArr(darken(featherCols[i],0.3)), 3);
+		drawLine(ctx, bx, by, tx, ty, colArr(featherCols[i]), 1.5);
+	}
+	// Bare feet
+	drawCircle(ctx, -5, 14, 3, col(140,89,51));
+	drawCircle(ctx, 5, 14, 3, col(140,89,51));
+	// Rattle staff
+	drawStaff(ctx, t, [128,89,38], (ctx, tx, ty, t) => {
+		const rattle = Math.sin(t*6)*2;
+		drawCircle(ctx, tx+rattle, ty, 3, col(204,128,26));
+		drawCircle(ctx, tx-rattle, ty-2, 2, col(153,77,13));
+		drawLine(ctx, tx, ty, tx+Math.sin(t*2)*2, ty+6, col(204,51,26), 1.5);
+	});
+	// Huipil body
+	drawPoly(ctx, [[-8,-4],[8,-4],[14,12],[-14,12]], [p.rc]);
+	drawPolyline(ctx, [[-8,-4],[-14,12],[14,12],[8,-4]], colArr(p.dc), 1.5);
+	// Zigzag pattern
+	for (let i=0;i<5;i++) {
+		const zx = -8+i*4;
+		drawLine(ctx, zx, 6, zx+2, 3, col(230,153,26,0.6), 1.5);
+		drawLine(ctx, zx+2, 3, zx+4, 6, col(230,153,26,0.6), 1.5);
+	}
+	// Spiral emblem
+	drawArc(ctx, 0, 7, 3, 0, Math.PI*1.5, colArr(p.lc), 1.5);
+	drawArc(ctx, 0, 7, 1.5, Math.PI, Math.PI+Math.PI*1.5, colArr(p.lc), 1.5);
+	// Feather shoulders
+	drawPoly(ctx, [[-7,-3],[-14,-5],[-10,0]], [[26,153,51]]);
+	drawPoly(ctx, [[7,-3],[14,-5],[10,0]], [[26,153,51]]);
+	drawHead(ctx, p);
+	drawEyes(ctx, [77,153,51], t);
+	// Face paint
+	const hy = -11;
+	for (let j=0;j<3;j++) {
+		drawLine(ctx, 6, hy+j*2-2, 9, hy+j*2-2, col(230,77,26,0.7), 1);
+		drawLine(ctx, -2, hy+j*2-2, -5, hy+j*2-2, col(230,77,26,0.7), 1);
+	}
+	drawCircle(ctx, 1, hy-3, 1.5, col(26,179,77));
+	drawMouth(ctx);
+	// Feather headdress
+	const hat_y = hy - 6;
+	const fCols = [[230,38,26],[26,179,51],[230,179,26],[26,128,204],[230,38,26]];
+	for (let i=0;i<5;i++) {
+		const angle = -0.6+i*0.3;
+		const dx = Math.sin(angle), dy = -Math.cos(angle);
+		const flen = 16+(i%2)*4;
+		drawLine(ctx, 0, hat_y, dx*flen, hat_y+dy*flen, colArr(darken(fCols[i],0.3)), 3);
+		drawLine(ctx, 0, hat_y, dx*flen, hat_y+dy*flen, colArr(fCols[i]), 2);
+		drawCircle(ctx, dx*flen, hat_y+dy*flen, 1.5, colArr(lighten(fCols[i],0.3)));
+	}
+	drawLine(ctx, -8, hat_y+1, 8, hat_y+1, col(153,102,26), 2.5);
+	drawLine(ctx, -7, hat_y+3, 7, hat_y+3, col(102,64,13), 1.5);
+	// Ancestor spirits
+	for (let i=0;i<2;i++) {
+		const sa = t*1.5+i*Math.PI;
+		const sx = Math.sin(sa)*18, sy = Math.cos(sa*0.8)*10;
+		const a2 = Math.sin(t*3+i)*0.3+0.4;
+		drawCircle(ctx, sx, sy, 3, col(77,230,102,a2*0.15));
+		drawCircle(ctx, sx, sy, 1.5, col(128,255,153,a2*0.3));
+	}
+}
+
+function drawNahual(ctx, p, t) {
+	// Jaguar cape
+	const capeCol = [191,140,38];
+	const cd = [-1,0], cp = [0,-1];
+	const sw = Math.sin(t*2)*3;
+	drawPoly(ctx, [
+		[-6,-2],[6,-2],
+		[cd[0]*12+cp[0]*(sw+5), 5+cd[1]*12+cp[1]*(sw+5)],
+		[cd[0]*18+cp[0]*sw, 10+cd[1]*18+cp[1]*sw],
+		[cd[0]*12+cp[0]*(sw-5), 5+cd[1]*12+cp[1]*(sw-5)],
+	], [capeCol]);
+	// Spots on cape
+	for (let i=0;i<3;i++) {
+		const sx = cd[0]*(8+i*4)+cp[0]*(sw*0.5+(i-1)*3);
+		const sy = 6+cd[1]*(8+i*4)+cp[1]*(sw*0.5+(i-1)*3);
+		drawCircle(ctx, sx, sy, 2, col(77,51,13,0.6));
+	}
+	// Clawed feet
+	drawCircle(ctx, -5, 14, 3.5, col(153,102,26));
+	drawLine(ctx, -5, 14, -1, 14, col(51,51,51), 1.5);
+	drawCircle(ctx, 5, 14, 3.5, col(153,102,26));
+	drawLine(ctx, 5, 14, 9, 14, col(51,51,51), 1.5);
+	// Macuahuitl
+	drawStaff(ctx, t, [102,77,26], (ctx, tx, ty, t) => {
+		const sd2 = [0.92,-0.38];
+		const bp = [-sd2[1], sd2[0]];
+		for (let i=0;i<3;i++) {
+			const ox = sd2[0]*(10+i*6), oy = sd2[1]*(10+i*6);
+			drawPoly(ctx, [
+				[tx-10+bp[0]*3+ox, ty+bp[1]*3+oy],
+				[tx-10+sd2[0]*2+ox, ty+sd2[1]*2+oy],
+				[tx-10-bp[0]*3+ox, ty-bp[1]*3+oy]
+			], [[38,38,51]]);
+		}
+	});
+	// Warrior body
+	drawPoly(ctx, [[-7,-4],[7,-4],[10,12],[-10,12]], [p.rc]);
+	drawPolyline(ctx, [[-7,-4],[-10,12],[10,12],[7,-4]], colArr(p.dc), 1.5);
+	// Jaguar spots on body
+	drawCircle(ctx, -3, 5, 2, colArr(darken(p.dc, 0.15)));
+	drawCircle(ctx, 4, 8, 1.5, colArr(darken(p.dc, 0.15)));
+	drawCircle(ctx, 1, 2, 1.5, colArr(darken(p.dc, 0.15)));
+	// Belt with fang
+	drawLine(ctx, -8, 3, 8, 3, colArr(p.dc), 2);
+	drawPoly(ctx, [[-1,3],[1,3],[0,7]], [[230,217,179]]);
+	// Claw shoulders
+	drawPoly(ctx, [[-6,-3],[-13,-5],[-9,0]], [[179,128,26]]);
+	drawPoly(ctx, [[6,-3],[13,-5],[9,0]], [[179,128,26]]);
+	drawHead(ctx, p);
+	// Fierce yellow eyes
+	const hy = -11;
+	const e1 = [3.5, hy-2.8], e2 = [3.5, hy+2.8];
+	drawCircle(ctx, e1[0], e1[1], 2.2, col(255,230,77));
+	drawCircle(ctx, e2[0], e2[1], 2.2, col(255,230,77));
+	// Slit pupils
+	drawLine(ctx, e1[0]+0.3, e1[1]-1.5, e1[0]+0.3, e1[1]+1.5, col(13,13,13), 1.5);
+	drawLine(ctx, e2[0]+0.3, e2[1]-1.5, e2[0]+0.3, e2[1]+1.5, col(13,13,13), 1.5);
+	// Aggressive brows
+	drawLine(ctx, e1[0]+2, e1[1]-3, e1[0]-1, e1[1]-1.5, col(77,51,13), 2);
+	drawLine(ctx, e2[0]-2, e2[1]-3, e2[0]+1, e2[1]-1.5, col(77,51,13), 2);
+	// Face paint
+	drawLine(ctx, 4, hy-4, 7, hy-4, col(26,26,26,0.6), 2);
+	drawLine(ctx, 4, hy+4, 7, hy+4, col(26,26,26,0.6), 2);
+	// Fangs
+	drawLine(ctx, 4.5, hy+2, 4.5, hy+5, col(242,230,204), 1.5);
+	drawLine(ctx, 7, hy+2, 7, hy+5, col(242,230,204), 1.5);
+	// Jaguar hood
+	const hb = hy - 5.5;
+	drawPoly(ctx, [[0,hb-6],[-10,hb+2],[-8,hb+5],[8,hb+5],[10,hb+2]], [[191,140,38]]);
+	// Ears
+	drawPoly(ctx, [[-8,hb],[-12,hb-10],[-4,hb-2]], [[191,140,38]]);
+	drawPoly(ctx, [[8,hb],[12,hb-10],[4,hb-2]], [[191,140,38]]);
+	// Spots on hood
+	drawCircle(ctx, -4, hb-2, 1.5, col(77,51,13,0.5));
+	drawCircle(ctx, 4, hb-2, 1.5, col(77,51,13,0.5));
+	// Jaguar spirit shadow
+	const ja = Math.sin(t)*0.05+0.08;
+	drawCircle(ctx, -12, 0, 10, col(102,77,13,ja));
+	drawCircle(ctx, -12, -5, 5, col(102,77,13,ja));
+	const je = Math.sin(t*2)*0.15+0.15;
+	drawCircle(ctx, -12+3, -6, 1, col(255,204,26,je));
+	drawCircle(ctx, -12-3, -6, 1, col(255,204,26,je));
+}
+
+function drawBrujo(ctx, p, t) {
+	// Ghostly ragged cape
+	for (let i=0;i<4;i++) {
+		const off = (i-2)*5;
+		const sw = Math.sin(t*2+i)*3;
+		const bx = off, by = -1;
+		const tx = -(14+(i%2)*6)+(off+sw), ty = 10;
+		drawLine(ctx, bx, by, tx, ty, col(77,38,102, 0.5-i*0.08), 3);
+	}
+	// Skeletal feet
+	drawCircle(ctx, -5, 14, 2.5, col(204,191,166));
+	drawCircle(ctx, 5, 14, 2.5, col(204,191,166));
+	// Bone staff
+	drawStaff(ctx, t, [204,191,166], (ctx, tx, ty, t) => {
+		drawCircle(ctx, tx, ty, 4, col(217,204,179));
+		drawCircle(ctx, tx-1.5, ty-1, 1, col(26,26,26));
+		drawCircle(ctx, tx+1.5, ty-1, 1, col(26,26,26));
+		const gp = Math.sin(t*3)*0.2+0.5;
+		drawCircle(ctx, tx, ty, 6, col(102,204,77,gp*0.3));
+	});
+	// Ragged body
+	drawPoly(ctx, [[-6,-3],[6,-3],[11,12],[-11,12]], [p.rc]);
+	// Ribs
+	for (let i=0;i<3;i++) {
+		drawLine(ctx, -5, 4+i*3, 5, 4+i*3, col(204,191,166,0.4), 1.5);
+	}
+	drawLine(ctx, -8, 2, 8, 2, col(204,191,166), 2);
+	// Bone shoulders
+	drawCircle(ctx, -8, -2, 3.5, col(204,191,166));
+	drawCircle(ctx, -8, -2, 1.5, col(26,26,26));
+	drawCircle(ctx, 8, -2, 3.5, col(204,191,166));
+	drawCircle(ctx, 8, -2, 1.5, col(26,26,26));
+	// Skull head
+	const hy = -11;
+	drawLine(ctx, 0, -4, 0, hy+7.5, colArr(darken(p.bc,0.1)), 4);
+	drawCircle(ctx, 0, hy, 7.5, col(217,204,179));
+	drawArc(ctx, 0, hy, 7.5, 0, Math.PI*2, col(128,115,89), 1.5);
+	// Hollow glowing eyes
+	const e1 = [3.5, hy-2.5], e2 = [3.5, hy+2.5];
+	drawCircle(ctx, e1[0], e1[1], 2.5, col(13,13,13));
+	drawCircle(ctx, e2[0], e2[1], 2.5, col(13,13,13));
+	const eg = Math.sin(t*3)*0.2+0.7;
+	drawCircle(ctx, e1[0], e1[1], 1.2, col(102,230,77,eg));
+	drawCircle(ctx, e2[0], e2[1], 1.2, col(102,230,77,eg));
+	// Nose
+	drawPoly(ctx, [[4.5, hy-1],[5.5, hy-1],[5, hy+1.5]], [[38,38,26]]);
+	// Stitched mouth
+	drawLine(ctx, 2, hy+5, 8, hy+5, col(51,51,38), 1);
+	for (let i=0;i<4;i++) {
+		const sx = 3+i*1.7;
+		drawLine(ctx, sx, hy+3.5, sx, hy+6.5, col(51,51,38), 1);
+	}
+	// Ragged hood
+	const hb = hy - 5;
+	drawPoly(ctx, [[0,hb-10],[-10,hb+1],[-7,hb+5],[7,hb+5],[10,hb+1]], [darken(p.rc, 0.2)]);
+	drawLine(ctx, -6, hb+5, -8, hb+9, colArr(darken(p.dc, 0.2)), 1.5);
+	drawLine(ctx, 3, hb+5, 5, hb+8, colArr(darken(p.dc, 0.2)), 1.5);
+	// Floating souls
+	for (let i=0;i<3;i++) {
+		const sa = t*1.2+i*Math.PI*2/3;
+		const sr = 16+Math.sin(t*2+i)*4;
+		const sx = Math.cos(sa)*sr, sy = Math.sin(sa)*sr*0.6;
+		const ga = Math.sin(t*3+i*2)*0.1+0.12;
+		drawCircle(ctx, sx, sy, 2.5, col(77,230,51,ga));
+		const psa = sa-0.3;
+		drawLine(ctx, sx, sy, Math.cos(psa)*sr, Math.sin(psa)*sr*0.6, col(77,230,51,ga*0.5), 1.5);
+	}
+}
+
+function drawSacerdote(ctx, p, t) {
+	// Golden cape
+	const cd=[-1,0], cp=[0,-1];
+	const sw = Math.sin(t*2.5)*3;
+	const capeCol = [204,128,13];
+	drawPoly(ctx, [
+		[-6,-2],[6,-2],
+		[cd[0]*13+cp[0]*(sw+6), 4],
+		[cd[0]*20+cp[0]*sw, 9],
+		[cd[0]*13+cp[0]*(sw-6), 4],
+	], [capeCol]);
+	drawPolyline(ctx, [
+		[cd[0]*13+cp[0]*(sw-6), 4],
+		[cd[0]*20+cp[0]*sw, 9],
+		[cd[0]*13+cp[0]*(sw+6), 4],
+	], col(255,217,77,0.6), 1.5);
+	// Golden sandals
+	drawCircle(ctx, -5, 14, 3.5, col(179,128,26));
+	drawCircle(ctx, 5, 14, 3.5, col(179,128,26));
+	// Solar disc staff
+	drawStaff(ctx, t, [179,140,26], (ctx, tx, ty, t) => {
+		drawLine(ctx, tx+20, ty, tx, ty, col(230,179,51), 1.5);
+		const sg = Math.sin(t*3)*0.15+0.85;
+		drawCircle(ctx, tx, ty, 5, col(255,179,26,sg*0.4));
+		drawCircle(ctx, tx, ty, 3.5, col(255,217,51,sg));
+		for (let i=0;i<6;i++) {
+			const ra = t+i*Math.PI/3;
+			drawLine(ctx, tx+Math.cos(ra)*4, ty+Math.sin(ra)*4, tx+Math.cos(ra)*8, ty+Math.sin(ra)*8, col(255,204,51,sg*0.5), 1.5);
+		}
+	});
+	// Ornamental body
+	drawPoly(ctx, [[-6,-3],[6,-3],[12,12],[-12,12]], [p.rc]);
+	drawPolyline(ctx, [[-6,-3],[-12,12],[12,12],[6,-3]], col(255,204,51,0.5), 1.5);
+	// Solar pattern
+	drawCircle(ctx, 0, 6, 3.5, col(255,179,26,0.5));
+	drawArc(ctx, 0, 6, 3.5, 0, Math.PI*2, colArr(p.lc), 1);
+	for (let i=0;i<6;i++) {
+		const ra = i*Math.PI/3;
+		drawLine(ctx, Math.cos(ra)*3.5, 6+Math.sin(ra)*3.5, Math.cos(ra)*5.5, 6+Math.sin(ra)*5.5, colArr(p.lc), 1);
+	}
+	drawLine(ctx, -8, 2, 8, 2, col(230,179,38), 2.5);
+	// Solar ray shoulders
+	for (const side of [-1,1]) {
+		const sx = side*9;
+		drawCircle(ctx, sx, -2, 4, col(230,153,26));
+		for (let i=0;i<4;i++) {
+			const ra = i*Math.PI/2+t*0.5;
+			drawLine(ctx, sx+Math.cos(ra)*3, -2+Math.sin(ra)*3, sx+Math.cos(ra)*6, -2+Math.sin(ra)*6, col(255,204,51,0.4), 1);
+		}
+	}
+	drawHead(ctx, p);
+	drawEyes(ctx, [230,166,26], t);
+	// Golden face marks
+	const hy = -11;
+	drawLine(ctx, 1, hy-3, 1, hy-6, col(255,204,51,0.6), 1.5);
+	drawLine(ctx, 7, hy+1, 10, hy+1, col(255,204,51,0.5), 1);
+	drawLine(ctx, -1, hy+1, -4, hy+1, col(255,204,51,0.5), 1);
+	drawMouth(ctx);
+	// Solar crown
+	const hb = hy - 6;
+	drawCircle(ctx, 0, hb-4, 7, col(230,153,26));
+	drawCircle(ctx, 0, hb-4, 5, col(255,204,51));
+	const rg = Math.sin(t*2)*0.2+0.8;
+	for (let i=0;i<8;i++) {
+		const ra = i*Math.PI/4;
+		const rlen = i%2===0 ? 10 : 7;
+		drawLine(ctx, Math.cos(ra)*6, hb-4+Math.sin(ra)*6, Math.cos(ra)*rlen, hb-4+Math.sin(ra)*rlen, col(255,217,51,rg), 2);
+	}
+	drawCircle(ctx, 0, hb-4, 2.5, col(255,242,128));
+	// Divine light rays
+	for (let i=0;i<3;i++) {
+		const la = t*0.8+i;
+		const lx = Math.sin(la)*10;
+		const la2 = Math.sin(t*2+i)*0.06+0.08;
+		drawLine(ctx, lx, -35, lx+Math.sin(la)*2, 15, col(255,230,102,la2), 2);
+	}
+}
+
+const drawFuncs = [drawMago, drawHechicero, drawChaman, drawNahual, drawBrujo, drawSacerdote];
+
+// Create canvases
+const canvases = [];
+for (let i = 0; i < 6; i++) {
+	const div = document.createElement('div');
+	div.className = 'card';
+	const canvas = document.createElement('canvas');
+	canvas.width = W;
+	canvas.height = H;
+	div.appendChild(canvas);
+	const nameEl = document.createElement('div');
+	nameEl.className = 'name';
+	nameEl.style.color = colArr(CHARS[i].color);
+	nameEl.textContent = CHARS[i].name;
+	div.appendChild(nameEl);
+	const descEl = document.createElement('div');
+	descEl.className = 'desc';
+	descEl.textContent = CHARS[i].desc;
+	div.appendChild(descEl);
+	document.body.appendChild(div);
+	canvases.push(canvas);
+}
+
+function animate() {
+	time += 0.016;
+	for (let i = 0; i < 6; i++) {
+		const canvas = canvases[i];
+		const ctx = canvas.getContext('2d');
+		ctx.clearRect(0, 0, W, H);
+		ctx.save();
+		ctx.translate(W/2, H/2 + 15);
+		ctx.scale(SCALE, SCALE);
+		drawFuncs[i](ctx, PALETTE[i], time);
+		ctx.restore();
+	}
+	requestAnimationFrame(animate);
+}
+animate();
+</script>
+</body>
+</html>

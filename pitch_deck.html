@@ -1,0 +1,1434 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nahual: Duelo Arcano — Pitch Deck</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Inter:wght@300;400;600;700&display=swap');
+
+  :root {
+    --gold: #C2954C;
+    --gold-light: #E8B84A;
+    --gold-dark: #8B6914;
+    --obsidian: #1a1118;
+    --obsidian-light: #2d1f2a;
+    --jade: #4A7C59;
+    --terracota: #B85C38;
+    --cyan: #33ccdd;
+    --pink: #e64d99;
+    --green: #26bf4d;
+    --yellow: #f2c018;
+    --purple: #8c26cc;
+    --orange: #ff8c1a;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }
+
+  @media print {
+    body { background: #1a1118 !important; }
+    .page { break-inside: avoid; page-break-inside: avoid; margin: 0 !important; border: none !important; }
+  }
+
+  body {
+    background: var(--obsidian);
+    color: #e8e0d6;
+    font-family: 'Inter', sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+  }
+
+  /* ========== PAGE SYSTEM ========== */
+  .page {
+    width: 1024px;
+    min-height: 680px;
+    margin: 0 auto 40px;
+    padding: 60px;
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(160deg, #1a1118 0%, #0f0a0e 50%, #1a1118 100%);
+    border: 1px solid rgba(194,149,76,0.2);
+    page-break-after: always;
+  }
+
+  .page::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  }
+
+  .page::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, var(--gold-dark), transparent);
+  }
+
+  /* Corner ornaments */
+  .corner-tl, .corner-tr, .corner-bl, .corner-br {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    border-color: var(--gold-dark);
+    border-style: solid;
+    opacity: 0.5;
+  }
+  .corner-tl { top: 12px; left: 12px; border-width: 2px 0 0 2px; }
+  .corner-tr { top: 12px; right: 12px; border-width: 2px 2px 0 0; }
+  .corner-bl { bottom: 12px; left: 12px; border-width: 0 0 2px 2px; }
+  .corner-br { bottom: 12px; right: 12px; border-width: 0 2px 2px 0; }
+
+  .page-number {
+    position: absolute;
+    bottom: 20px;
+    right: 30px;
+    font-family: 'Cinzel', serif;
+    font-size: 12px;
+    color: var(--gold-dark);
+    opacity: 0.6;
+  }
+
+  /* ========== TYPOGRAPHY ========== */
+  h1 {
+    font-family: 'Cinzel', serif;
+    font-weight: 900;
+    font-size: 48px;
+    background: linear-gradient(135deg, var(--gold-light), var(--gold), var(--gold-dark));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  }
+
+  h2 {
+    font-family: 'Cinzel', serif;
+    font-weight: 700;
+    font-size: 28px;
+    color: var(--gold-light);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(194,149,76,0.25);
+  }
+
+  h3 {
+    font-family: 'Cinzel', serif;
+    font-weight: 700;
+    font-size: 18px;
+    color: var(--gold);
+    margin-bottom: 10px;
+    letter-spacing: 1px;
+  }
+
+  p { margin-bottom: 14px; color: #ccc5bb; }
+
+  .subtitle {
+    font-family: 'Inter', sans-serif;
+    font-size: 18px;
+    font-weight: 300;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: #a89880;
+  }
+
+  .tagline {
+    font-size: 20px;
+    font-style: italic;
+    color: var(--gold);
+    border-left: 3px solid var(--gold-dark);
+    padding-left: 20px;
+    margin: 24px 0;
+  }
+
+  .highlight {
+    color: var(--gold-light);
+    font-weight: 700;
+  }
+
+  /* ========== COVER PAGE ========== */
+  .cover {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 680px;
+    text-align: center;
+  }
+
+  .cover-glyph {
+    width: 120px;
+    height: 120px;
+    margin-bottom: 30px;
+    position: relative;
+  }
+
+  .cover-glyph svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  .cover h1 {
+    font-size: 56px;
+    margin-bottom: 8px;
+  }
+
+  .cover .subtitle {
+    margin-bottom: 50px;
+  }
+
+  .cover-meta {
+    margin-top: 40px;
+    font-size: 14px;
+    color: #776a5c;
+    letter-spacing: 2px;
+  }
+
+  .cover-meta span {
+    display: inline-block;
+    margin: 0 12px;
+  }
+
+  .cover-badge {
+    display: inline-block;
+    margin-top: 30px;
+    padding: 10px 28px;
+    border: 1px solid var(--gold-dark);
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    text-transform: uppercase;
+  }
+
+  /* ========== GRID LAYOUTS ========== */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+  }
+
+  .three-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 20px;
+  }
+
+  /* ========== CARDS ========== */
+  .card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(194,149,76,0.15);
+    border-radius: 8px;
+    padding: 24px;
+  }
+
+  .card-accent {
+    border-top: 3px solid var(--gold);
+  }
+
+  /* ========== CHARACTER CARDS ========== */
+  .char-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+
+  .char-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(194,149,76,0.15);
+    border-radius: 8px;
+    padding: 18px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .char-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+
+  .char-card .char-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    margin: 0 auto 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    font-family: 'Cinzel', serif;
+    font-weight: 900;
+    color: #fff;
+  }
+
+  .char-card canvas.char-canvas {
+    display: block;
+    margin: 0 auto 10px;
+    border-radius: 8px;
+    background: radial-gradient(ellipse at center, rgba(40,30,50,0.6) 0%, transparent 70%);
+  }
+
+  .char-card h3 {
+    font-size: 15px;
+    margin-bottom: 6px;
+  }
+
+  .char-card p {
+    font-size: 12px;
+    color: #999;
+    margin-bottom: 0;
+  }
+
+  .char-mago .char-icon { background: #33ccdd; }
+  .char-mago::before { background: #33ccdd; }
+  .char-hechicero .char-icon { background: #e64d99; }
+  .char-hechicero::before { background: #e64d99; }
+  .char-chaman .char-icon { background: #26bf4d; }
+  .char-chaman::before { background: #26bf4d; }
+  .char-nahual .char-icon { background: #f2c018; }
+  .char-nahual::before { background: #f2c018; }
+  .char-brujo .char-icon { background: #8c26cc; }
+  .char-brujo::before { background: #8c26cc; }
+  .char-sacerdote .char-icon { background: #ff8c1a; }
+  .char-sacerdote::before { background: #ff8c1a; }
+
+  /* ========== STAT BOXES ========== */
+  .stat-row {
+    display: flex;
+    gap: 16px;
+    margin: 20px 0;
+  }
+
+  .stat-box {
+    flex: 1;
+    text-align: center;
+    padding: 16px 10px;
+    background: rgba(194,149,76,0.06);
+    border: 1px solid rgba(194,149,76,0.15);
+    border-radius: 8px;
+  }
+
+  .stat-box .stat-num {
+    font-family: 'Cinzel', serif;
+    font-size: 32px;
+    font-weight: 900;
+    color: var(--gold-light);
+    display: block;
+  }
+
+  .stat-box .stat-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #887a6c;
+    margin-top: 4px;
+  }
+
+  /* ========== ABILITY TABLE ========== */
+  .ability-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin: 16px 0;
+  }
+
+  .ability {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(194,149,76,0.12);
+    border-radius: 6px;
+    padding: 14px;
+    text-align: center;
+  }
+
+  .ability .ability-icon {
+    font-size: 24px;
+    margin-bottom: 6px;
+  }
+
+  .ability .ability-name {
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+    color: var(--gold);
+    margin-bottom: 4px;
+  }
+
+  .ability .ability-desc {
+    font-size: 11px;
+    color: #999;
+  }
+
+  /* ========== FEATURES LIST ========== */
+  .feature-list {
+    list-style: none;
+    padding: 0;
+  }
+
+  .feature-list li {
+    padding: 10px 0 10px 28px;
+    position: relative;
+    border-bottom: 1px solid rgba(194,149,76,0.08);
+    color: #ccc5bb;
+  }
+
+  .feature-list li::before {
+    content: '◆';
+    position: absolute;
+    left: 0;
+    color: var(--gold);
+    font-size: 10px;
+    top: 13px;
+  }
+
+  /* ========== TIMELINE ========== */
+  .timeline {
+    position: relative;
+    padding-left: 30px;
+  }
+
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 8px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: linear-gradient(180deg, var(--gold), var(--gold-dark), transparent);
+  }
+
+  .timeline-item {
+    position: relative;
+    margin-bottom: 28px;
+    padding-left: 20px;
+  }
+
+  .timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -26px;
+    top: 6px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--gold);
+    border: 2px solid var(--obsidian);
+  }
+
+  .timeline-item h3 {
+    font-size: 16px;
+    margin-bottom: 6px;
+  }
+
+  .timeline-item .duration {
+    font-size: 12px;
+    color: var(--gold-dark);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .timeline-item p {
+    font-size: 14px;
+    margin-top: 6px;
+  }
+
+  /* ========== UNIQUE SECTION ========== */
+  .zero-assets {
+    background: linear-gradient(135deg, rgba(194,149,76,0.08), rgba(194,149,76,0.02));
+    border: 1px solid rgba(194,149,76,0.2);
+    border-radius: 12px;
+    padding: 30px;
+    text-align: center;
+    margin: 24px 0;
+  }
+
+  .zero-assets .big-zero {
+    font-family: 'Cinzel', serif;
+    font-size: 72px;
+    font-weight: 900;
+    background: linear-gradient(135deg, var(--gold-light), var(--gold-dark));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1;
+  }
+
+  .zero-assets .zero-label {
+    font-size: 18px;
+    color: var(--gold);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-top: 8px;
+  }
+
+  .zero-row {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    margin-top: 20px;
+  }
+
+  .zero-item {
+    text-align: center;
+  }
+
+  .zero-item .zero-x {
+    font-family: 'Cinzel', serif;
+    font-size: 28px;
+    font-weight: 900;
+    color: var(--terracota);
+  }
+
+  .zero-item .zero-desc {
+    font-size: 12px;
+    color: #887a6c;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  /* ========== SCREENSHOT STYLES ========== */
+  .screenshot-area {
+    border-radius: 12px;
+    margin: 20px 0;
+    overflow: hidden;
+  }
+
+  .screenshot-area img {
+    width: 100%;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    display: block;
+  }
+
+  .game-screenshot {
+    width: 100%;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    display: block;
+  }
+
+  .screenshot-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 20px 0;
+  }
+
+  .screenshot-grid img {
+    width: 100%;
+    border-radius: 10px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+    display: block;
+  }
+
+  .screenshot-caption {
+    font-size: 11px;
+    color: #665a4e;
+    text-align: center;
+    margin-top: 8px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  /* ========== PLAY BUTTON ========== */
+  .play-btn {
+    display: inline-block;
+    padding: 14px 40px;
+    background: linear-gradient(135deg, var(--gold-dark), var(--gold), var(--gold-light));
+    color: var(--obsidian);
+    font-family: 'Cinzel', serif;
+    font-weight: 900;
+    font-size: 16px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    text-decoration: none;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(194,149,76,0.4);
+  }
+  .play-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 25px rgba(194,149,76,0.6);
+  }
+  .play-btn-sm {
+    display: inline-block;
+    padding: 8px 24px;
+    background: linear-gradient(135deg, var(--gold-dark), var(--gold));
+    color: var(--obsidian);
+    font-family: 'Cinzel', serif;
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    text-decoration: none;
+    border-radius: 4px;
+    box-shadow: 0 2px 10px rgba(194,149,76,0.3);
+  }
+
+  /* ========== CONTACT ========== */
+  .contact-box {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    justify-content: center;
+    margin-top: 30px;
+  }
+
+  .contact-item {
+    padding: 12px 24px;
+    border: 1px solid rgba(194,149,76,0.2);
+    border-radius: 6px;
+    font-size: 14px;
+    color: #a89880;
+  }
+
+  .contact-item strong {
+    color: var(--gold);
+  }
+
+  /* ========== PRINT ========== */
+  @media print {
+    body { background: #000; }
+    .page {
+      margin: 0;
+      border: none;
+      page-break-after: always;
+      page-break-inside: avoid;
+    }
+  }
+
+  /* ========== SEPARATOR ========== */
+  .sep {
+    width: 60px;
+    height: 2px;
+    background: var(--gold-dark);
+    margin: 20px auto;
+  }
+
+  .sep-wide {
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(194,149,76,0.3), transparent);
+    margin: 24px 0;
+  }
+</style>
+</head>
+<body>
+
+<!-- ==================== PAGE 1: PORTADA ==================== -->
+<div class="page cover">
+  <div class="corner-tl"></div><div class="corner-tr"></div>
+  <div class="corner-bl"></div><div class="corner-br"></div>
+
+  <img src="nahual_logo.png" alt="Nahual: Duelo Arcano" style="width:500px; margin-bottom:10px; border-radius:16px;">
+
+  <div class="sep" style="margin:30px auto;"></div>
+
+  <p class="tagline" style="border:none; padding:0; font-size:17px; max-width:600px;">
+    Combate magico con IA y campana inspirado en la mitologia mesoamericana<br>
+    <span style="color:#a89880;">Elige tu nahual. Domina los elementos. Conquista la arena.</span>
+  </p>
+
+  <div class="cover-meta">
+    <span>GODOT 4.6</span>
+    <span>•</span>
+    <span>CAMPANA + VS IA</span>
+    <span>•</span>
+    <span>ANDROID · iOS · PC</span>
+  </div>
+
+  <a href="https://jesusdelavega.github.io/arcane-duel/" target="_blank" class="play-btn" style="margin-top:30px;">▶ JUGAR DEMO EN NAVEGADOR</a>
+
+  <div class="cover-badge" style="margin-top:20px;">INGENIA Play Lab 2025</div>
+
+  <div class="page-number">1 / 10</div>
+</div>
+
+
+<!-- ==================== PAGE 2: IDEA GENERAL ==================== -->
+<div class="page">
+  <div class="corner-tl"></div><div class="corner-tr"></div>
+  <div class="corner-bl"></div><div class="corner-br"></div>
+
+  <h2>Idea General</h2>
+
+  <p style="font-size:18px; color:#e8e0d6; margin-bottom:20px;">
+    <strong style="color:var(--gold-light);">Nahual: Duelo Arcano</strong> es un juego de <span class="highlight">combate en arena 2D</span> con modos vs IA, campaña y multijugador online. Inspirado en la mitología mesoamericana, cada jugador elige entre 6 nahuales — arquetipos místicos prehispánicos — y domina hechizos elementales, combos, defensa, esquiva y gestión de maná para derrotar a su oponente. Incluye un modo campaña completo con 5 jefes, intros cinemáticas y progresión.
+  </p>
+
+  <div style="margin:16px 0;">
+    <img src="ss_gameplay.png" class="game-screenshot" alt="Combate en arena — HUD, orbes y proyectil de fuego">
+  </div>
+
+  <div style="text-align:center; margin:12px 0;">
+    <a href="https://jesusdelavega.github.io/arcane-duel/" target="_blank" class="play-btn-sm">▶ PROBAR DEMO</a>
+  </div>
+
+  <div class="sep-wide"></div>
+
+  <div class="two-col">
+    <div>
+      <h3>La Experiencia</h3>
+      <p>Cada duelo es un enfrentamiento táctico de 90 segundos donde cada decisión cuenta. ¿Lanzas una bola de fuego arriesgando tu maná? ¿Guardas defensa esperando el ataque enemigo? ¿Recoges orbes para desatar combos devastadores? El combate se siente visceral gracias a screen shake, freeze frames, arena tinting y efectos de impacto que escalan con el daño.</p>
+    </div>
+    <div>
+      <h3>El Hook</h3>
+      <p>Un fighting game <span class="highlight">con identidad 100% mexicana</span>. Personajes basados en nahuales, guerreros jaguar, chamanes y sacerdotes solares — con combate rapido, sistema de combos, campana con 5 jefes y game feel de nivel profesional. Facil de aprender, dificil de dominar.</p>
+    </div>
+  </div>
+
+  <div class="stat-row">
+    <div class="stat-box">
+      <span class="stat-num">6</span>
+      <span class="stat-label">Nahuales</span>
+    </div>
+    <div class="stat-box">
+      <span class="stat-num">6+6</span>
+      <span class="stat-label">Habilidades + Combos</span>
+    </div>
+    <div class="stat-box">
+      <span class="stat-num">3</span>
+      <span class="stat-label">Modos de Juego</span>
+    </div>
+    <div class="stat-box">
+      <span class="stat-num">7K+</span>
+      <span class="stat-label">Lineas de Codigo</span>
+    </div>
+  </div>
+
+  <div class="page-number">2 / 10</div>
+</div>
+
+
+<!-- ==================== PAGE 3: GENERO Y PLATAFORMA ==================== -->
+<div class="page">
+  <div class="corner-tl"></div><div class="corner-tr"></div>
+  <div class="corner-bl"></div><div class="corner-br"></div>
+
+  <h2>Género y Plataforma</h2>
+
+  <div class="two-col">
+    <div class="card card-accent">
+      <h3>Especificaciones Técnicas</h3>
+      <ul class="feature-list">
+        <li><strong>Género:</strong> Arena Combat / Fighting Game 2D</li>
+        <li><strong>Motor:</strong> Godot 4.6 (GL Compatibility)</li>
+        <li><strong>Resolución:</strong> 1280 × 720</li>
+        <li><strong>Lenguaje:</strong> GDScript</li>
+        <li><strong>Renderer:</strong> Canvas 2D (draw API)</li>
+      </ul>
+    </div>
+    <div class="card card-accent">
+      <h3>Plataformas</h3>
+      <ul class="feature-list">
+        <li><strong>Desarrollo:</strong> PC (Windows / Linux)</li>
+        <li><strong>Lanzamiento:</strong> Android (Google Play)</li>
+        <li><strong>Lanzamiento:</strong> iOS (App Store)</li>
+        <li><strong>Adicional:</strong> PC + Web (HTML5)</li>
+        <li><strong>Controles:</strong> Touch / Teclado / Gamepad</li>
+        <li><strong>Modos:</strong> vs IA · Campaña (5 jefes) · Online PvP</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="sep-wide"></div>
+
+  <h3>Juegos de Referencia</h3>
+  <div style="display:flex; gap:20px; margin-top:16px;">
+    <div class="card" style="flex:1; text-align:center;">
+      <h3 style="font-size:14px;">Magicka</h3>
+      <p style="font-size:12px; margin:0;">Combate con combinación de elementos mágicos</p>
+    </div>
+    <div class="card" style="flex:1; text-align:center;">
+      <h3 style="font-size:14px;">Battlerite</h3>
+      <p style="font-size:12px; margin:0;">Arena combat top-down con habilidades</p>
+    </div>
+    <div class="card" style="flex:1; text-align:center;">
+      <h3 style="font-size:14px;">Brawlhalla</h3>
+      <p style="font-size:12px; margin:0;">Fighting game accesible y competitivo</p>
+    </div>
+    <div class="card" style="flex:1; text-align:center;">
+      <h3 style="font-size:14px;">Wizard of Legend</h3>
+      <p style="font-size:12px; margin:0;">Combate rápido con magos y hechizos</p>
+    </div>
+  </div>
+
+  <div class="page-number">3 / 10</div>
+</div>
+
+
+<!-- ==================== PAGE 4: PROPUESTA DE VALOR ==================== -->
+<div class="page">
+  <div class="corner-tl"></div><div class="corner-tr"></div>
+  <div class="corner-bl"></div><div class="corner-br"></div>
+
+  <h2>Propuesta de Valor</h2>
+
+  <p class="tagline">"Brawlhalla meets mitología mexicana — en tu celular"</p>
+
+  <div style="margin-bottom:20px;">
+    <img src="ss_menu.png" class="game-screenshot" alt="Menu principal con logo, seleccion de modo y dificultad">
+    <p class="screenshot-caption">Menu principal — logo, modos de juego y seleccion de dificultad</p>
+  </div>
+
+  <div class="zero-assets">
+    <div class="big-zero" style="font-size:48px;">COMBATE ARCANO</div>
+    <div class="zero-label">Prototipo funcional con 7,100+ lineas de codigo</div>
+    <div class="zero-row">
+      <div class="zero-item">
+        <div class="zero-x" style="color:var(--gold);">6</div>
+        <div class="zero-desc">Nahuales</div>
+      </div>
+      <div class="zero-item">
+        <div class="zero-x" style="color:var(--jade);">12</div>
+        <div class="zero-desc">Habilidades + Combos</div>
+      </div>
+      <div class="zero-item">
+        <div class="zero-x" style="color:var(--terracota);">5</div>
+        <div class="zero-desc">Jefes de Campana</div>
+      </div>
+      <div class="zero-item">
+        <div class="zero-x" style="color:var(--purple);">14</div>
+        <div class="zero-desc">Efectos de Sonido</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <h3>Temática Mesoamericana</h3>
+      <p>Nahuales, guerreros jaguar, chamanes, sacerdotes solares. La mitología prehispánica como base para un juego de combate competitivo. No existe otro juego móvil de combate online con esta identidad cultural.</p>
+    </div>
+    <div class="card">
+      <h3>Modo Campana</h3>
+      <p>5 jefes con intros cinematicas, frases unicas y dificultad escalante. Conquista cada templo con tu nahual elegido. Sistema de progresion visual con pantalla de victoria.</p>
+    </div>
+    <div class="card">
+      <h3>Game Feel Profesional</h3>
+      <p>Screen shake, hitstop (freeze frames), screen flash, arena tinting, knockback, 7 sistemas de particulas y numeros de dano flotantes — tecnicas de juegos AAA ya implementadas.</p>
+    </div>
+    <div class="card">
+      <h3>Profundidad Estrategica</h3>
+      <p>6 habilidades base + 6 combos con orbes. Gestion de mana, timing de esquivas, combos devastadores. IA con 3 niveles que incluye evasion de proyectiles en dificil. Facil de aprender, dificil de dominar.</p>
+    </div>
+  </div>
+
+  <div class="page-number">4 / 10</div>
+</div>
+
+
+<!-- ==================== PAGE 5: PUBLICO OBJETIVO ==================== -->
+<div class="page">
+  <div class="corner-tl"></div><div class="corner-tr"></div>
+  <div class="corner-bl"></div><div class="corner-br"></div>
+
+  <h2>Público Objetivo</h2>
+
+  <div class="three-col" style="margin-bottom:30px;">
+    <div class="card card-accent">
+      <h3 style="color:var(--gold-light);">Primario</h3>
+      <p><strong>Gamers móviles competitivos</strong></p>
+      <p style="font-size:14px;">Edad: 13-30 años. Jugadores de Android/iOS que buscan fighting games rápidos y competitivos. Fans de Brawlhalla, Brawl Stars, Arena of Valor.</p>
+    </div>
+    <div class="card card-accent">
+      <h3 style="color:var(--jade);">Secundario</h3>
+      <p><strong>Comunidad gamer mexicana</strong></p>
+      <p style="font-size:14px;">76M+ gamers en México que se identificarán con la temática mesoamericana. Orgullosamente mexicano en un mercado dominado por estéticas asiáticas y occidentales.</p>
+    </div>
+    <div class="card card-accent">
+      <h3 style="color:var(--terracota);">Terciario</h3>
+      <p><strong>Audiencia global de fighting games</strong></p>
+      <p style="font-size:14px;">La mitología mesoamericana genera curiosidad internacional. Mercado de mobile fighting games en crecimiento constante.</p>
+    </div>
+  </div>
+
+  <div class="sep-wide"></div>
+
+  <h3>Mercado</h3>
+  <div class="stat-row">
+    <div class="stat-box">
+      <span class="stat-num">76M+</span>
+      <span class="stat-label">Gamers en México</span>
+    </div>
+    <div class="stat-box">
+      <span class="stat-num">11%</span>
+      <span class="stat-label">LATAM del mercado global</span>
+    </div>
+    <div class="stat-box">
+      <span class="stat-num">$2.3B</span>
+      <span class="stat-label">USD mercado MX 2023</span>
+    </div>
+  </div>
+
+  <p style="font-size:14px; color:#887a6c; text-align:center; margin-top:10px;">
+    El mercado movil representa el 50% del gaming global. No existe un fighting game movil<br>
+    con identidad mesoamericana. Nahual llena ese espacio con orgullo jalisciense.
+  </p>
+
+  <div class="page-number">5 / 10</div>
+</div>
+
+
+<!-- ==================== PAGE 6: ARTE Y ESTETICA ==================== -->
+<div class="page">
+  <div class="corner-tl"></div><div class="corner-tr"></div>
+  <div class="corner-bl"></div><div class="corner-br"></div>
+
+  <h2>Arte y Estética</h2>
+
+  <p>Estilo visual <span class="highlight">100% procedural — generado por codigo</span>. Todo el arte es dibujado en tiempo real con la draw API de Godot: personajes, retratos, proyectiles, particulas y arena. La version final contara con sprites profesionales manteniendo la identidad prehispanica.</p>
+
+  <div class="screenshot-grid">
+    <div>
+      <img src="ss_gameplay.png" alt="Combate en arena con HUD, orbes y proyectil de fuego">
+      <p class="screenshot-caption">Combate en arena con HUD y proyectiles</p>
+    </div>
+    <div>
+      <img src="ss_gameplay2.png" alt="Accion de combate entre nahuales">
+      <p class="screenshot-caption">Accion de combate entre nahuales</p>
+    </div>
+  </div>
+
+  <div style="text-align:center; margin:8px 0 16px;">
+    <a href="https://jesusdelavega.github.io/arcane-duel/" target="_blank" class="play-btn-sm">▶ VER EN ACCION</a>
+  </div>
+
+  <div class="two-col">
+    <div>
+      <h3>Implementado (Procedural)</h3>
+      <ul class="feature-list" style="font-size:14px;">
+        <li>Arena con 30 particulas ambientales flotantes</li>
+        <li>Arena tinting dinamico por habilidad (fuego/hielo)</li>
+        <li>Retratos de personajes dibujados en codigo (811 lineas)</li>
+        <li>Proyectiles con trails de 14 puntos y chispas orbitantes</li>
+        <li>Ola de hielo con 14 fragmentos y anillos concentricos</li>
+        <li>Orbes con runas rotativas y 6 chispas en orbita</li>
+        <li>Numeros de dano flotantes con color segun intensidad</li>
+        <li>Particulas de impacto: diamantes, lineas, destellos</li>
+        <li>50 particulas ambientales en menu principal</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Vision Final (Arte Profesional)</h3>
+      <ul class="feature-list" style="font-size:14px;">
+        <li>Sprites profesionales con animaciones frame-by-frame</li>
+        <li>Disenos basados en arquetipos mesoamericanos</li>
+        <li>Efectos magicos por personaje (auras, espiritus)</li>
+        <li>Multiples arenas tematicas (templos, selva, volcan)</li>
+        <li>Skins y customizacion visual (monetizacion)</li>
+        <li>Efectos de estado pulidos: escudo, afterimages, stun</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="page-number">6 / 10</div>
+</div>
+
+
+<!-- ==================== PAGE 7: PERSONAJES ==================== -->
+<div class="page">
+  <div class="corner-tl"></div><div class="corner-tr"></div>
+  <div class="corner-bl"></div><div class="corner-br"></div>
+
+  <h2>Los 6 Nahuales</h2>
+
+  <div style="margin-bottom:20px;">
+  </div>
+
+  <div class="char-grid" id="charGrid">
+    <div class="char-card char-mago">
+      <canvas class="char-canvas" id="canvas-0" width="120" height="130"></canvas>
+      <h3>Mago</h3>
+      <p>Hechicero estelar clasico. Sombrero puntiagudo, baston con estrella, chispas orbitando.</p>
+      <p style="font-size:11px; color:var(--cyan); margin:0;"><em>"Las estrellas dictan tu derrota..."</em></p>
+    </div>
+    <div class="char-card char-hechicero">
+      <canvas class="char-canvas" id="canvas-1" width="120" height="130"></canvas>
+      <h3>Hechicero</h3>
+      <p>Maestro de artes oscuras. Capucha con cuernos, baston de cristal, niebla a los pies.</p>
+      <p style="font-size:11px; color:var(--pink); margin:0;"><em>"La oscuridad consume todo..."</em></p>
+    </div>
+    <div class="char-card char-chaman">
+      <canvas class="char-canvas" id="canvas-2" width="120" height="130"></canvas>
+      <h3>Chaman</h3>
+      <p>Guardian de espiritus ancestrales. Penacho de plumas, huipil, pintura tribal.</p>
+      <p style="font-size:11px; color:var(--green); margin:0;"><em>"Los ancestros me protegen..."</em></p>
+    </div>
+    <div class="char-card char-nahual">
+      <canvas class="char-canvas" id="canvas-3" width="120" height="130"></canvas>
+      <h3>Nahual</h3>
+      <p>Guerrero jaguar. Capucha de jaguar, macuahuitl de obsidiana, espiritu felino.</p>
+      <p style="font-size:11px; color:var(--yellow); margin:0;"><em>"El rugido del jaguar sera lo ultimo que escuches..."</em></p>
+    </div>
+    <div class="char-card char-brujo">
+      <canvas class="char-canvas" id="canvas-4" width="120" height="130"></canvas>
+      <h3>Brujo</h3>
+      <p>Invocador de almas. Mascara de craneo, baston de hueso, almas flotantes.</p>
+      <p style="font-size:11px; color:var(--purple); margin:0;"><em>"Tus huesos seran mi nuevo baston..."</em></p>
+    </div>
+    <div class="char-card char-sacerdote">
+      <canvas class="char-canvas" id="canvas-5" width="120" height="130"></canvas>
+      <h3>Sacerdote Sol</h3>
+      <p>Portador del fuego sagrado. Corona solar con 12 rayos, baston dorado con disco solar.</p>
+      <p style="font-size:11px; color:var(--orange); margin:0;"><em>"El sol purifica a los indignos..."</em></p>
+    </div>
+  </div>
+
+  <div class="sep-wide"></div>
+
+  <h3>Sistema de Combate</h3>
+  <div class="ability-grid">
+    <div class="ability">
+      <div class="ability-icon" style="color:#ff6644;">🔥</div>
+      <div class="ability-name">Bola de Fuego</div>
+      <div class="ability-desc">20 maná · 18 daño · Proyectil rápido</div>
+    </div>
+    <div class="ability">
+      <div class="ability-icon" style="color:#44aaff;">❄</div>
+      <div class="ability-name">Ola de Hielo</div>
+      <div class="ability-desc">30 maná · 12 daño + 0.8s stun · Area circular</div>
+    </div>
+    <div class="ability">
+      <div class="ability-icon" style="color:#aa44ff;">✦</div>
+      <div class="ability-name">Explosión Arcana</div>
+      <div class="ability-desc">50 maná · 35 daño · Proyectil devastador</div>
+    </div>
+    <div class="ability">
+      <div class="ability-icon">⚔</div>
+      <div class="ability-name">Golpe Cuerpo a Cuerpo</div>
+      <div class="ability-desc">0 maná · 8 daño · +10 maná al impactar</div>
+    </div>
+    <div class="ability">
+      <div class="ability-icon" style="color:#44ddaa;">🛡</div>
+      <div class="ability-name">Defensa</div>
+      <div class="ability-desc">Mantener · Reduce daño 85% · Niega stun</div>
+    </div>
+    <div class="ability">
+      <div class="ability-icon" style="color:#dddd44;">⚡</div>
+      <div class="ability-name">Esquiva</div>
+      <div class="ability-desc">0.8s CD · Dash rápido · Invencibilidad</div>
+    </div>
+  </div>
+
+  <div class="sep-wide"></div>
+
+  <h3>Sistema de Combos (Orbes)</h3>
+  <p style="font-size:13px; color:#a89880; margin-bottom:12px;">Recoge orbes rojos y azules en la arena para desbloquear combos al atacar cuerpo a cuerpo:</p>
+  <div class="ability-grid" style="grid-template-columns: repeat(3, 1fr);">
+    <div class="ability">
+      <div class="ability-name" style="color:#ff6644;">Golpe Fuerte</div>
+      <div class="ability-desc">3 rojos · 30 dano</div>
+    </div>
+    <div class="ability">
+      <div class="ability-name" style="color:#cc44ff;">Ataque Especial</div>
+      <div class="ability-desc">1 rojo + 1 azul · 20 dano + stun</div>
+    </div>
+    <div class="ability">
+      <div class="ability-name" style="color:#ff8844;">Golpe Rapido</div>
+      <div class="ability-desc">2 rojos · 15 dano</div>
+    </div>
+    <div class="ability">
+      <div class="ability-name" style="color:#4488ff;">Stun Corto</div>
+      <div class="ability-desc">2 azules · 5 dano + 0.7s stun</div>
+    </div>
+    <div class="ability">
+      <div class="ability-name" style="color:#ee5533;">Golpe</div>
+      <div class="ability-desc">1 rojo · 8 dano</div>
+    </div>
+    <div class="ability">
+      <div class="ability-name" style="color:#44aaff;">Toque Frio</div>
+      <div class="ability-desc">1 azul · 3 dano + 0.35s stun</div>
+    </div>
+  </div>
+
+  <div class="page-number">7 / 10</div>
+</div>
+
+
+<!-- ==================== PAGE 8: ESTADO ACTUAL ==================== -->
+<div class="page">
+  <div class="corner-tl"></div><div class="corner-tr"></div>
+  <div class="corner-bl"></div><div class="corner-br"></div>
+
+  <h2>Estado Actual</h2>
+
+  <div style="margin-bottom:20px;">
+    <img src="ss_gameplay2.png" class="game-screenshot" alt="Accion de combate — prototipo funcional">
+    <p class="screenshot-caption">Prototipo funcional — combate con efectos visuales y HUD completo</p>
+  </div>
+
+  <div style="text-align:center; margin-bottom:16px;">
+    <a href="https://jesusdelavega.github.io/arcane-duel/" target="_blank" class="play-btn">▶ JUGAR DEMO EN NAVEGADOR</a>
+  </div>
+
+  <div class="stat-row" style="margin-bottom:24px;">
+    <div class="stat-box">
+      <span class="stat-num">7,100+</span>
+      <span class="stat-label">Lineas de Codigo</span>
+    </div>
+    <div class="stat-box">
+      <span class="stat-num">11</span>
+      <span class="stat-label">Scripts GDScript</span>
+    </div>
+    <div class="stat-box">
+      <span class="stat-num">8</span>
+      <span class="stat-label">Escenas</span>
+    </div>
+    <div class="stat-box">
+      <span class="stat-num">14</span>
+      <span class="stat-label">SFX Procedurales</span>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div>
+      <h3 style="color:#4A7C59;">Prototipo Funcional (PC)</h3>
+      <ul class="feature-list" style="font-size:13px;">
+        <li>6 nahuales con retratos unicos (811 lineas de arte procedural)</li>
+        <li>Sistema de combate: 6 habilidades + 6 combos con orbes</li>
+        <li>Modo Campana completo: 5 jefes, intros cinematicas, frases unicas, dificultad escalante</li>
+        <li>IA con 3 niveles (facil/normal/dificil con evasion de proyectiles)</li>
+        <li>Rondas best-of-3 con timer 90s y transiciones animadas</li>
+        <li>Seleccion de personaje con retratos dibujados en tiempo real</li>
+        <li>Audio procedural: musica dinamica + 14 efectos de sonido</li>
+        <li>HUD completo: HP, mana, cooldowns, numeros de dano flotantes</li>
+        <li>Game feel: screen shake, hitstop, flash, arena tint, knockback</li>
+        <li>7 sistemas de particulas (impacto, proyectil, hielo, orbes, menu, arena, dano)</li>
+        <li>Settings: volumen, brillo, rebind de teclas con persistencia</li>
+        <li>Soporte completo de gamepad (sticks + D-pad + botones)</li>
+      </ul>
+    </div>
+    <div>
+      <h3 style="color:var(--terracota);">Roadmap hacia MVP</h3>
+      <ul class="feature-list" style="font-size:13px;">
+        <li><strong>Multijugador online</strong> (prioridad #1)</li>
+        <li>Arte profesional: sprites y animaciones</li>
+        <li>Habilidades unicas por personaje</li>
+        <li>Controles tactiles para movil</li>
+        <li>Mas arenas tematicas</li>
+        <li>Sistema de matchmaking y ranked</li>
+        <li>Build Android + iOS</li>
+        <li>Sistema de progresion y skins</li>
+        <li>Balance con playtesting</li>
+      </ul>
+
+      <div class="sep-wide"></div>
+
+      <h3>Resumen</h3>
+      <div style="font-size:14px;">
+        <p>El prototipo es un juego <strong style="color:var(--gold-light);">completamente jugable</strong> con combate, campana, IA, audio y efectos visuales funcionando. Todo generado proceduralmente — sin assets externos. El siguiente paso es multijugador online y arte profesional.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-number">8 / 10</div>
+</div>
+
+
+<!-- ==================== PAGE 9: EQUIPO + PLAN ==================== -->
+<div class="page">
+  <div class="corner-tl"></div><div class="corner-tr"></div>
+  <div class="corner-bl"></div><div class="corner-br"></div>
+
+  <h2>Equipo y Plan de Desarrollo</h2>
+
+  <div class="card" style="margin-bottom:30px; border-left:3px solid var(--gold);">
+    <h3>Presentación</h3>
+    <p style="font-size:16px;">
+      <strong style="color:var(--gold-light);">José de Jesús de la Vega García</strong><br>
+      <span style="color:#a89880;">Ing. en Sistemas Computacionales · Desarrollador Full-Stack · Game Developer</span>
+    </p>
+    <p style="font-size:14px;">
+      Ingeniero en Sistemas Computacionales (TecNM) con <span class="highlight">+4 anos de experiencia</span> en desarrollo full-stack y liderazgo de proyectos TI. Trayectoria en <strong>GRUPO SIMEC</strong> (Jefe de Sistemas TI), <strong>We Care Products</strong> (Jefe TI / Programador) y la <strong>Secretaria de la Defensa Nacional - SEDENA</strong> (Jefe de Desarrollo). Dominio de React, Node.js, Python, bases de datos, infraestructura cloud y desarrollo de APIs.
+    </p>
+    <p style="font-size:14px;">
+      <strong style="color:#a89880;">Aplicado al juego:</strong> Toda la experiencia en arquitectura de software, APIs en tiempo real, y optimizacion de sistemas se traduce directamente en la implementacion del netcode multijugador, backend de matchmaking, y la arquitectura cliente-servidor necesaria para el juego online.
+    </p>
+    <p style="font-size:14px; color:var(--gold);">
+      Un prototipo de <strong>7,100+ lineas de codigo</strong> desarrollado por una sola persona — programacion, game design, IA, audio procedural, arte procedural, sistema de combos, modo campana y settings completos — demostrando capacidad tecnica para llevar el proyecto al siguiente nivel.
+    </p>
+  </div>
+
+  <h3>Roadmap</h3>
+  <div class="timeline">
+    <div class="timeline-item">
+      <span class="duration">Fase 0 · Pre-incubacion — 6 semanas</span>
+      <h3>Multijugador + Arte</h3>
+      <p>Implementar netcode para duelos online 1v1. Integrar sprites profesionales para los 6 personajes. Disenar controles tactiles. Primera build de Android jugable.</p>
+    </div>
+    <div class="timeline-item">
+      <span class="duration">Fase 1 · Incubacion — 12 semanas</span>
+      <h3>Beta Cerrada</h3>
+      <p>Sistema de matchmaking y ranked. Habilidades unicas por personaje. 3+ arenas tematicas. Build iOS. Testing con jugadores reales. Modelo de negocio (F2P con skins). Optimizacion de netcode.</p>
+    </div>
+    <div class="timeline-item">
+      <span class="duration">Fase 2 · MVP Launch — 8 semanas</span>
+      <h3>Lanzamiento en Stores</h3>
+      <p>Publicacion en Google Play y App Store. Trailer de lanzamiento. Sistema de progresion y temporadas. Marketing y adquisicion de jugadores. Feedback de comunidad.</p>
+    </div>
+  </div>
+
+  <div class="page-number">9 / 10</div>
+</div>
+
+
+<!-- ==================== PAGE 10: CIERRE ==================== -->
+<div class="page cover" style="justify-content:center;">
+  <div class="corner-tl"></div><div class="corner-tr"></div>
+  <div class="corner-bl"></div><div class="corner-br"></div>
+
+  <img src="nahual_logo.png" alt="Nahual: Duelo Arcano" style="width:350px; margin-bottom:10px; border-radius:12px;">
+  <div class="sep" style="margin:20px auto;"></div>
+
+  <p style="font-size:18px; color:#a89880; max-width:600px; text-align:center; margin:0 auto 20px;">
+    El primer juego de combate online móvil con identidad mesoamericana.<br>
+    Hecho en Jalisco para el mundo.
+  </p>
+
+  <a href="https://jesusdelavega.github.io/arcane-duel/" target="_blank" class="play-btn" style="margin-bottom:30px;">▶ JUGAR DEMO EN NAVEGADOR</a>
+
+  <div class="contact-box">
+    <div class="contact-item">
+      <strong>Email:</strong> programador@outlook.es
+    </div>
+    <div class="contact-item">
+      <strong>Web:</strong> jesusdelavega.com
+    </div>
+    <div class="contact-item">
+      <strong>GitHub:</strong> github.com/jesusdelavega
+    </div>
+    <div class="contact-item">
+      <strong>LinkedIn:</strong> ingjesusdelavega
+    </div>
+  </div>
+  <p style="margin-top:20px; font-size:13px; color:#665a4e;">
+    Zapopan, Jalisco · Tel: 55 6071 5550
+  </p>
+
+  <p style="margin-top:50px; font-size:13px; color:#554a40; letter-spacing:2px; text-transform:uppercase;">
+    Gracias por su atención
+  </p>
+
+  <div class="page-number">10 / 10</div>
+</div>
+
+<script>
+// ── Animated Character Canvases ──
+(function(){
+const PALETTE = [
+  { rc:[45,90,120], dc:[25,55,80], lc:[80,170,210], bc:[220,195,170] },
+  { rc:[80,30,70],  dc:[50,15,45], lc:[210,80,140], bc:[210,185,170] },
+  { rc:[50,100,55], dc:[30,65,35], lc:[60,180,80],  bc:[180,155,130] },
+  { rc:[120,85,20], dc:[75,55,15], lc:[230,180,40], bc:[200,170,130] },
+  { rc:[65,25,85],  dc:[40,15,55], lc:[130,50,190], bc:[220,200,180] },
+  { rc:[140,90,15], dc:[90,58,10], lc:[255,200,50], bc:[215,185,155] },
+];
+const SC = 3.2;
+let time = 0;
+
+function col(r,g,b,a){return a!==undefined?`rgba(${r},${g},${b},${a})`:`rgb(${r},${g},${b})`;}
+function ca(a,o){return o!==undefined?`rgba(${a[0]},${a[1]},${a[2]},${o})`:`rgb(${a[0]},${a[1]},${a[2]})`;}
+function dk(c,m){return c.map(v=>Math.max(0,Math.floor(v*(1-m))));}
+function lt(c,m){return c.map(v=>Math.min(255,Math.floor(v+(255-v)*m)));}
+
+function cir(x,cx,cy,r,c){x.beginPath();x.arc(cx,cy,r,0,Math.PI*2);x.fillStyle=c;x.fill();}
+function arc(x,cx,cy,r,s,e,c,w){x.beginPath();x.arc(cx,cy,r,s,e);x.strokeStyle=c;x.lineWidth=w;x.stroke();}
+function lin(x,x1,y1,x2,y2,c,w){x.beginPath();x.moveTo(x1,y1);x.lineTo(x2,y2);x.strokeStyle=c;x.lineWidth=w;x.stroke();}
+function poly(x,pts,c){x.beginPath();x.moveTo(pts[0][0],pts[0][1]);for(let i=1;i<pts.length;i++)x.lineTo(pts[i][0],pts[i][1]);x.closePath();x.fillStyle=ca(c);x.fill();}
+function plin(x,pts,c,w){x.beginPath();x.moveTo(pts[0][0],pts[0][1]);for(let i=1;i<pts.length;i++)x.lineTo(pts[i][0],pts[i][1]);x.strokeStyle=c;x.lineWidth=w;x.stroke();}
+
+function cape(x,p,t){
+  const sw=Math.sin(t*2.5)*4;
+  poly(x,[[-5,-2],[5,-2],[-14+(-sw-6),4],[-22+(-sw),10],[-14+(-sw+6),4]],dk(p.dc,0.15));
+  plin(x,[[-5,-2],[-14+(-sw+6),4],[-22+(-sw),10],[-14+(-sw-6),4],[5,-2]],ca(lt(p.dc,0.15),0.6),1);
+}
+function feet(x,p){
+  cir(x,-5,14,3.5,ca(p.dc));cir(x,-3,14,2,ca(dk(p.dc,0.15)));
+  cir(x,5,14,3.5,ca(p.dc));cir(x,7,14,2,ca(dk(p.dc,0.15)));
+}
+function body(x,p){
+  poly(x,[[-6,-3],[6,-3],[12,12],[-12,12]],p.rc);
+  plin(x,[[-6,-3],[-12,12],[12,12],[6,-3]],ca(p.dc),1.5);
+  lin(x,-3,4,-5,12,ca(p.dc,0.35),1);lin(x,3,4,5,12,ca(p.dc,0.35),1);
+  lin(x,-8,3,8,3,ca(p.dc),2);x.fillStyle=ca(p.lc);x.fillRect(-2,1.5,4,3);
+  lin(x,-12,12,12,12,ca(lt(p.dc,0.1)),1.5);
+}
+function head(x,p){
+  lin(x,0,-4,0,-3.5,ca(dk(p.bc,0.1)),4);
+  cir(x,0,-11,7.5,ca(p.bc));arc(x,0,-11,7.5,0,Math.PI*2,ca(p.dc),1.5);
+}
+function eyes(x,iris){
+  const e1=[3.5,-13.8],e2=[3.5,-8.2];
+  cir(x,e1[0],e1[1],2.2,'white');cir(x,e2[0],e2[1],2.2,'white');
+  cir(x,e1[0]+.5,e1[1],1.4,ca(iris));cir(x,e2[0]+.5,e2[1],1.4,ca(iris));
+  cir(x,e1[0]+.7,e1[1],.7,col(13,13,26));cir(x,e2[0]+.7,e2[1],.7,col(13,13,26));
+  cir(x,e1[0]+.2,e1[1]-.5,.5,col(255,255,255,.8));cir(x,e2[0]+.2,e2[1]-.5,.5,col(255,255,255,.8));
+  lin(x,e1[0]-1.5,e1[1]-2.5,e1[0]+1.5,e1[1]-3,col(64,51,38),1.2);
+  lin(x,e2[0]+1.5,e2[1]-2.5,e2[0]-1.5,e2[1]-3,col(64,51,38),1.2);
+}
+function mouth(x){arc(x,5,-8.5,1.2,.3,Math.PI-.3,col(64,51,38),1);}
+
+function staff(x,t,sc,tip){
+  const bx=-7,by=0,tx=bx-20,ty=by-8;
+  lin(x,bx,by,tx,ty,ca(sc),2.5);tip(x,tx,ty,t);
+}
+
+// ── Per-character draw ──
+function drawMago(x,p,t){
+  cape(x,p,t);feet(x,p);
+  staff(x,t,[115,77,38],(x,tx,ty,t)=>{
+    const sg=Math.sin(t*4)*.2+.8;
+    cir(x,tx,ty,3,col(255,255,128,sg));
+    for(let i=0;i<4;i++){const a=t*1.5+i*Math.PI/2;lin(x,tx+Math.cos(a)*3,ty+Math.sin(a)*3,tx+Math.cos(a)*6,ty+Math.sin(a)*6,col(255,255,153,sg*.4),1);}
+  });
+  body(x,p);cir(x,0,7,2.5,ca(p.lc));lin(x,0,4,0,10,ca(p.lc),1);lin(x,-3,7,3,7,ca(p.lc),1);
+  cir(x,-8,-2,4,ca(lt(p.rc,.1)));arc(x,-8,-2,4,0,Math.PI*2,ca(p.dc),1);
+  cir(x,8,-2,4,ca(lt(p.rc,.1)));arc(x,8,-2,4,0,Math.PI*2,ca(p.dc),1);
+  head(x,p);eyes(x,[51,128,230]);mouth(x);
+  const hb=-16.5;poly(x,[[3,hb-18],[-11,hb+2],[11,hb+2]],lt(p.rc,.2));
+  lin(x,-11,hb+2,11,hb+2,ca(p.dc),3);cir(x,3,hb-18,2.5,col(255,255,128,Math.sin(t*3)*.3+.7));
+  for(let i=0;i<3;i++){const a=t*2+i*Math.PI*2/3,r=20+Math.sin(t*3+i)*3,s=Math.sin(t*8+i*2)*.3+.7;
+    cir(x,Math.cos(a)*r,Math.sin(a)*r,1.5,col(204,230,255,s*.4));cir(x,Math.cos(a)*r,Math.sin(a)*r,.8,col(255,255,255,s*.6));}
+}
+
+function drawHechicero(x,p,t){
+  cape(x,p,t);feet(x,p);
+  staff(x,t,[89,64,102],(x,tx,ty,t)=>{
+    const gp=Math.sin(t*3)*.15+.85;cir(x,tx,ty,3,col(204,51,255,gp));
+    poly(x,[[tx,ty-4],[tx+3,ty],[tx,ty+4],[tx-3,ty]],[230,102,255]);
+  });
+  body(x,p);poly(x,[[0,4.5],[2.5,7],[0,9.5],[-2.5,7]],p.lc);
+  poly(x,[[-5,-4],[-12,-3],[-7,1]],lt(p.rc,.1));poly(x,[[5,-4],[12,-3],[7,1]],lt(p.rc,.1));
+  head(x,p);eyes(x,[204,51,102]);mouth(x);
+  const hb=-16.5;poly(x,[[0,hb-10],[-10,hb],[-8,hb+5],[8,hb+5],[10,hb]],lt(p.rc,.1));
+  lin(x,-7,hb-1,-12,hb-13,ca(p.dc),2.5);lin(x,7,hb-1,12,hb-13,ca(p.dc),2.5);
+  const hg=Math.sin(t*2.5)*.3+.7;cir(x,-12,hb-13,2,col(255,77,128,hg));cir(x,12,hb-13,2,col(255,77,128,hg));
+  for(let i=0;i<5;i++){const ma=t*1.5+i*1.3;cir(x,Math.sin(ma)*12,14+Math.cos(ma*.7)*4,3+Math.sin(t+i),col(77,26,102,.08));}
+}
+
+function drawChaman(x,p,t){
+  const fc=[[204,51,26],[26,153,51],[230,179,26],[26,153,51],[204,51,26]];
+  for(let i=0;i<5;i++){const o=(i-2)*4,sw=Math.sin(t*3)*3,tx=-(16+(i%2)*4)+(o+sw);
+    lin(x,o,-1,tx,8,ca(dk(fc[i],.3)),3);lin(x,o,-1,tx,8,ca(fc[i]),1.5);}
+  cir(x,-5,14,3,col(140,89,51));cir(x,5,14,3,col(140,89,51));
+  staff(x,t,[128,89,38],(x,tx,ty,t)=>{const r=Math.sin(t*6)*2;cir(x,tx+r,ty,3,col(204,128,26));cir(x,tx-r,ty-2,2,col(153,77,13));lin(x,tx,ty,tx+Math.sin(t*2)*2,ty+6,col(204,51,26),1.5);});
+  poly(x,[[-8,-4],[8,-4],[14,12],[-14,12]],p.rc);plin(x,[[-8,-4],[-14,12],[14,12],[8,-4]],ca(p.dc),1.5);
+  for(let i=0;i<5;i++){const zx=-8+i*4;lin(x,zx,6,zx+2,3,col(230,153,26,.6),1.5);lin(x,zx+2,3,zx+4,6,col(230,153,26,.6),1.5);}
+  arc(x,0,7,3,0,Math.PI*1.5,ca(p.lc),1.5);poly(x,[[-7,-3],[-14,-5],[-10,0]],[26,153,51]);poly(x,[[7,-3],[14,-5],[10,0]],[26,153,51]);
+  head(x,p);eyes(x,[77,153,51]);
+  const hy=-11;for(let j=0;j<3;j++){lin(x,6,hy+j*2-2,9,hy+j*2-2,col(230,77,26,.7),1);lin(x,-2,hy+j*2-2,-5,hy+j*2-2,col(230,77,26,.7),1);}
+  cir(x,1,hy-3,1.5,col(26,179,77));mouth(x);
+  const hat_y=hy-6;const fCols=[[230,38,26],[26,179,51],[230,179,26],[26,128,204],[230,38,26]];
+  for(let i=0;i<5;i++){const a=-.6+i*.3,dx=Math.sin(a),dy=-Math.cos(a),fl=16+(i%2)*4;
+    lin(x,0,hat_y,dx*fl,hat_y+dy*fl,ca(dk(fCols[i],.3)),3);lin(x,0,hat_y,dx*fl,hat_y+dy*fl,ca(fCols[i]),2);cir(x,dx*fl,hat_y+dy*fl,1.5,ca(lt(fCols[i],.3)));}
+  lin(x,-8,hat_y+1,8,hat_y+1,col(153,102,26),2.5);
+  for(let i=0;i<2;i++){const sa=t*1.5+i*Math.PI,sx=Math.sin(sa)*18,sy=Math.cos(sa*.8)*10,a2=Math.sin(t*3+i)*.3+.4;
+    cir(x,sx,sy,3,col(77,230,102,a2*.15));cir(x,sx,sy,1.5,col(128,255,153,a2*.3));}
+}
+
+function drawNahual(x,p,t){
+  const cc=[191,140,38],sw=Math.sin(t*2)*3;
+  poly(x,[[-6,-2],[6,-2],[-12-sw-5,5],[-18-sw,10],[-12-sw+5,5]],cc);
+  for(let i=0;i<3;i++){const sx=-(8+i*4)-(sw*.5+(i-1)*3);cir(x,sx,6,2,col(77,51,13,.6));}
+  cir(x,-5,14,3.5,col(153,102,26));lin(x,-5,14,-1,14,col(51,51,51),1.5);
+  cir(x,5,14,3.5,col(153,102,26));lin(x,5,14,9,14,col(51,51,51),1.5);
+  staff(x,t,[102,77,26],(x,tx,ty)=>{
+    for(let i=0;i<3;i++){const ox=-.38*(10+i*6),oy=-.92*(10+i*6);poly(x,[[tx+ox-3,ty+oy],[tx+ox,ty+oy+2],[tx+ox+3,ty+oy]],[38,38,51]);}
+  });
+  poly(x,[[-7,-4],[7,-4],[10,12],[-10,12]],p.rc);plin(x,[[-7,-4],[-10,12],[10,12],[7,-4]],ca(p.dc),1.5);
+  cir(x,-3,5,2,ca(dk(p.dc,.15)));cir(x,4,8,1.5,ca(dk(p.dc,.15)));cir(x,1,2,1.5,ca(dk(p.dc,.15)));
+  lin(x,-8,3,8,3,ca(p.dc),2);poly(x,[[-1,3],[1,3],[0,7]],[230,217,179]);
+  poly(x,[[-6,-3],[-13,-5],[-9,0]],[179,128,26]);poly(x,[[6,-3],[13,-5],[9,0]],[179,128,26]);
+  head(x,p);
+  const hy=-11,e1=[3.5,hy-2.8],e2=[3.5,hy+2.8];
+  cir(x,e1[0],e1[1],2.2,col(255,230,77));cir(x,e2[0],e2[1],2.2,col(255,230,77));
+  lin(x,e1[0]+.3,e1[1]-1.5,e1[0]+.3,e1[1]+1.5,col(13,13,13),1.5);
+  lin(x,e2[0]+.3,e2[1]-1.5,e2[0]+.3,e2[1]+1.5,col(13,13,13),1.5);
+  lin(x,e1[0]+2,e1[1]-3,e1[0]-1,e1[1]-1.5,col(77,51,13),2);lin(x,e2[0]-2,e2[1]-3,e2[0]+1,e2[1]-1.5,col(77,51,13),2);
+  lin(x,4,hy-4,7,hy-4,col(26,26,26,.6),2);lin(x,4,hy+4,7,hy+4,col(26,26,26,.6),2);
+  lin(x,4.5,hy+2,4.5,hy+5,col(242,230,204),1.5);lin(x,7,hy+2,7,hy+5,col(242,230,204),1.5);
+  const hb=hy-5.5;poly(x,[[0,hb-6],[-10,hb+2],[-8,hb+5],[8,hb+5],[10,hb+2]],[191,140,38]);
+  poly(x,[[-8,hb],[-12,hb-10],[-4,hb-2]],[191,140,38]);poly(x,[[8,hb],[12,hb-10],[4,hb-2]],[191,140,38]);
+  cir(x,-4,hb-2,1.5,col(77,51,13,.5));cir(x,4,hb-2,1.5,col(77,51,13,.5));
+  const ja=Math.sin(t)*.05+.08;cir(x,-12,0,10,col(102,77,13,ja));cir(x,-12,-5,5,col(102,77,13,ja));
+  const je=Math.sin(t*2)*.15+.15;cir(x,-9,-6,1,col(255,204,26,je));cir(x,-15,-6,1,col(255,204,26,je));
+}
+
+function drawBrujo(x,p,t){
+  for(let i=0;i<4;i++){const o=(i-2)*5,sw=Math.sin(t*2+i)*3,tx=-(14+(i%2)*6)+(o+sw);
+    lin(x,o,-1,tx,10,col(77,38,102,.5-i*.08),3);}
+  cir(x,-5,14,2.5,col(204,191,166));cir(x,5,14,2.5,col(204,191,166));
+  staff(x,t,[204,191,166],(x,tx,ty,t)=>{
+    cir(x,tx,ty,4,col(217,204,179));cir(x,tx-1.5,ty-1,1,col(26,26,26));cir(x,tx+1.5,ty-1,1,col(26,26,26));
+    cir(x,tx,ty,6,col(102,204,77,(Math.sin(t*3)*.2+.5)*.3));
+  });
+  poly(x,[[-6,-3],[6,-3],[11,12],[-11,12]],p.rc);
+  for(let i=0;i<3;i++)lin(x,-5,4+i*3,5,4+i*3,col(204,191,166,.4),1.5);
+  lin(x,-8,2,8,2,col(204,191,166),2);
+  cir(x,-8,-2,3.5,col(204,191,166));cir(x,-8,-2,1.5,col(26,26,26));
+  cir(x,8,-2,3.5,col(204,191,166));cir(x,8,-2,1.5,col(26,26,26));
+  const hy=-11;lin(x,0,-4,0,hy+7.5,ca(dk(p.bc,.1)),4);cir(x,0,hy,7.5,col(217,204,179));arc(x,0,hy,7.5,0,Math.PI*2,col(128,115,89),1.5);
+  const e1=[3.5,hy-2.5],e2=[3.5,hy+2.5];
+  cir(x,e1[0],e1[1],2.5,col(13,13,13));cir(x,e2[0],e2[1],2.5,col(13,13,13));
+  const eg=Math.sin(t*3)*.2+.7;cir(x,e1[0],e1[1],1.2,col(102,230,77,eg));cir(x,e2[0],e2[1],1.2,col(102,230,77,eg));
+  poly(x,[[4.5,hy-1],[5.5,hy-1],[5,hy+1.5]],[38,38,26]);
+  lin(x,2,hy+5,8,hy+5,col(51,51,38),1);for(let i=0;i<4;i++)lin(x,3+i*1.7,hy+3.5,3+i*1.7,hy+6.5,col(51,51,38),1);
+  const hb=hy-5;poly(x,[[0,hb-10],[-10,hb+1],[-7,hb+5],[7,hb+5],[10,hb+1]],dk(p.rc,.2));
+  lin(x,-6,hb+5,-8,hb+9,ca(dk(p.dc,.2)),1.5);lin(x,3,hb+5,5,hb+8,ca(dk(p.dc,.2)),1.5);
+  for(let i=0;i<3;i++){const sa=t*1.2+i*Math.PI*2/3,sr=16+Math.sin(t*2+i)*4,sx=Math.cos(sa)*sr,sy=Math.sin(sa)*sr*.6;
+    const ga=Math.sin(t*3+i*2)*.1+.12;cir(x,sx,sy,2.5,col(77,230,51,ga));
+    lin(x,sx,sy,Math.cos(sa-.3)*sr,Math.sin(sa-.3)*sr*.6,col(77,230,51,ga*.5),1.5);}
+}
+
+function drawSacerdote(x,p,t){
+  const sw=Math.sin(t*2.5)*3,cc=[204,128,13];
+  poly(x,[[-6,-2],[6,-2],[-13-sw-6,4],[-20-sw,9],[-13-sw+6,4]],cc);
+  plin(x,[[-13-sw+6,4],[-20-sw,9],[-13-sw-6,4]],col(255,217,77,.6),1.5);
+  cir(x,-5,14,3.5,col(179,128,26));cir(x,5,14,3.5,col(179,128,26));
+  staff(x,t,[179,140,26],(x,tx,ty,t)=>{
+    const sg=Math.sin(t*3)*.15+.85;cir(x,tx,ty,5,col(255,179,26,sg*.4));cir(x,tx,ty,3.5,col(255,217,51,sg));
+    for(let i=0;i<6;i++){const ra=t+i*Math.PI/3;lin(x,tx+Math.cos(ra)*4,ty+Math.sin(ra)*4,tx+Math.cos(ra)*8,ty+Math.sin(ra)*8,col(255,204,51,sg*.5),1.5);}
+  });
+  poly(x,[[-6,-3],[6,-3],[12,12],[-12,12]],p.rc);plin(x,[[-6,-3],[-12,12],[12,12],[6,-3]],col(255,204,51,.5),1.5);
+  cir(x,0,6,3.5,col(255,179,26,.5));arc(x,0,6,3.5,0,Math.PI*2,ca(p.lc),1);
+  for(let i=0;i<6;i++){const ra=i*Math.PI/3;lin(x,Math.cos(ra)*3.5,6+Math.sin(ra)*3.5,Math.cos(ra)*5.5,6+Math.sin(ra)*5.5,ca(p.lc),1);}
+  lin(x,-8,2,8,2,col(230,179,38),2.5);
+  for(const s of[-1,1]){const sx=s*9;cir(x,sx,-2,4,col(230,153,26));
+    for(let i=0;i<4;i++){const ra=i*Math.PI/2+t*.5;lin(x,sx+Math.cos(ra)*3,-2+Math.sin(ra)*3,sx+Math.cos(ra)*6,-2+Math.sin(ra)*6,col(255,204,51,.4),1);}}
+  head(x,p);eyes(x,[230,166,26]);
+  const hy=-11;lin(x,1,hy-3,1,hy-6,col(255,204,51,.6),1.5);
+  lin(x,7,hy+1,10,hy+1,col(255,204,51,.5),1);lin(x,-1,hy+1,-4,hy+1,col(255,204,51,.5),1);mouth(x);
+  const hb=hy-6;cir(x,0,hb-4,7,col(230,153,26));cir(x,0,hb-4,5,col(255,204,51));
+  const rg=Math.sin(t*2)*.2+.8;
+  for(let i=0;i<8;i++){const ra=i*Math.PI/4,rl=i%2===0?10:7;lin(x,Math.cos(ra)*6,hb-4+Math.sin(ra)*6,Math.cos(ra)*rl,hb-4+Math.sin(ra)*rl,col(255,217,51,rg),2);}
+  cir(x,0,hb-4,2.5,col(255,242,128));
+  for(let i=0;i<3;i++){const la=t*.8+i,lx=Math.sin(la)*10,la2=Math.sin(t*2+i)*.06+.08;lin(x,lx,-35,lx+Math.sin(la)*2,15,col(255,230,102,la2),2);}
+}
+
+const drawFns=[drawMago,drawHechicero,drawChaman,drawNahual,drawBrujo,drawSacerdote];
+const cvs=[];
+for(let i=0;i<6;i++){const c=document.getElementById('canvas-'+i);if(c)cvs.push(c);}
+
+function animate(){
+  time+=0.016;
+  for(let i=0;i<cvs.length;i++){
+    const c=cvs[i],ctx=c.getContext('2d');
+    ctx.clearRect(0,0,c.width,c.height);
+    ctx.save();ctx.translate(c.width/2,c.height/2+15);ctx.scale(SC,SC);
+    drawFns[i](ctx,PALETTE[i],time);
+    ctx.restore();
+  }
+  requestAnimationFrame(animate);
+}
+if(cvs.length>0)animate();
+})();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,25 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/player.gd" id="1_script"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_body"]
+radius = 16.0
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_collector"]
+radius = 28.0
+
+[node name="Player" type="CharacterBody2D"]
+motion_mode = 1
+collision_layer = 1
+collision_mask = 1
+script = ExtResource("1_script")
+
+[node name="BodyShape" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_body")
+
+[node name="OrbCollector" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 2
+
+[node name="CollectorShape" type="CollisionShape2D" parent="OrbCollector"]
+shape = SubResource("CircleShape2D_collector")
