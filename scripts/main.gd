@@ -98,6 +98,17 @@ var story_select_panel: Panel
 var story_cursor = 0
 var boss_intro_active = false
 
+# Cursor indicators (char select)
+var p1_cursor_indicator: Label
+var p2_cursor_indicator: Label
+
+# AI search animation (char select)
+var ai_search_active = false
+var ai_search_timer = 0.0
+var ai_search_target = 0
+var ai_search_speed = 0.08
+var ai_search_elapsed = 0.0
+
 # Title screen
 var title_active = true
 var title_panel: Panel
@@ -309,51 +320,51 @@ func _create_title_screen() -> void:
 	title_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	hud.add_child(title_panel)
 
-	# Vignette overlay for depth
+	# Vignette overlay - tono oscuro con toque azulado para equilibrar el dorado
 	var vignette = ColorRect.new()
 	vignette.position = Vector2.ZERO
 	vignette.size = Vector2(1280, 720)
-	vignette.color = Color(0.0, 0.0, 0.0, 0.35)
+	vignette.color = Color(0.0, 0.02, 0.06, 0.35)
 	vignette.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	title_panel.add_child(vignette)
 
-	# Logo grande centrado
-	var logo_w = 420.0
+	# Logo centrado (compacto)
+	var logo_w = 260.0
 	var logo_h = logo_w * (float(LogoTexture.get_height()) / float(LogoTexture.get_width()))
 	var logo_rect = TextureRect.new()
 	logo_rect.name = "TitleLogo"
 	logo_rect.texture = LogoTexture
-	logo_rect.position = Vector2(640.0 - logo_w / 2.0, 120)
+	logo_rect.position = Vector2(640.0 - logo_w / 2.0, 160)
 	logo_rect.size = Vector2(logo_w, logo_h)
 	logo_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	logo_rect.stretch_mode = TextureRect.STRETCH_SCALE
+	logo_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	logo_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	title_panel.add_child(logo_rect)
 
 	# Subtitle
 	var sub = Label.new()
 	sub.text = "DUELO ARCANO"
-	sub.position = Vector2(0, 120 + logo_h + 10)
-	sub.size = Vector2(1280, 40)
+	sub.position = Vector2(0, 160 + logo_h + 6)
+	sub.size = Vector2(1280, 34)
 	sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	sub.add_theme_font_size_override("font_size", 20)
-	sub.add_theme_color_override("font_color", Color(0.76, 0.58, 0.3, 0.8))
+	sub.add_theme_font_size_override("font_size", 18)
+	sub.add_theme_color_override("font_color", Color(0.9, 0.85, 0.75, 0.85))
 	title_panel.add_child(sub)
 
 	# Decorative line
 	var deco = ColorRect.new()
-	deco.position = Vector2(440, 120 + logo_h + 55)
-	deco.size = Vector2(400, 2)
-	deco.color = Color(0.76, 0.58, 0.3, 0.5)
+	deco.position = Vector2(470, 160 + logo_h + 42)
+	deco.size = Vector2(340, 2)
+	deco.color = Color(0.75, 0.7, 0.55, 0.4)
 	title_panel.add_child(deco)
 
 	# Version / flavor text
 	var flavor = Label.new()
 	flavor.text = "Invoca el poder de los antiguos nahuales"
-	flavor.position = Vector2(0, 120 + logo_h + 65)
-	flavor.size = Vector2(1280, 30)
+	flavor.position = Vector2(0, 160 + logo_h + 50)
+	flavor.size = Vector2(1280, 26)
 	flavor.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	flavor.add_theme_font_size_override("font_size", 14)
+	flavor.add_theme_font_size_override("font_size", 13)
 	flavor.add_theme_color_override("font_color", Color(0.6, 0.55, 0.45, 0.7))
 	title_panel.add_child(flavor)
 
@@ -365,7 +376,7 @@ func _create_title_screen() -> void:
 	enter_label.size = Vector2(1280, 40)
 	enter_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	enter_label.add_theme_font_size_override("font_size", 22)
-	enter_label.add_theme_color_override("font_color", Color(0.95, 0.85, 0.3))
+	enter_label.add_theme_color_override("font_color", Color(0.95, 0.92, 0.8))
 	title_panel.add_child(enter_label)
 
 	# Bottom credits
@@ -399,97 +410,99 @@ func _dismiss_title() -> void:
 
 func _create_mode_select() -> void:
 	mode_select_panel = Panel.new()
-	mode_select_panel.position = Vector2(190, 70)
-	mode_select_panel.size = Vector2(900, 580)
+	mode_select_panel.position = Vector2(140, 80)
+	mode_select_panel.size = Vector2(1000, 560)
 	var ps = StyleBoxFlat.new()
-	ps.bg_color = Color(0.04, 0.03, 0.06, 0.7)
-	ps.border_color = Color(0.76, 0.58, 0.3, 0.5)
-	ps.set_border_width_all(2)
-	ps.set_corner_radius_all(10)
-	ps.shadow_color = Color(0, 0, 0, 0.6)
-	ps.shadow_size = 20
+	ps.bg_color = Color(0.02, 0.02, 0.05, 0.6)
+	ps.border_color = Color(0.6, 0.5, 0.35, 0.35)
+	ps.set_border_width_all(1)
+	ps.set_corner_radius_all(12)
+	ps.shadow_color = Color(0, 0, 0, 0.5)
+	ps.shadow_size = 25
 	mode_select_panel.add_theme_stylebox_override("panel", ps)
 	hud.add_child(mode_select_panel)
 
-	# Logo inside panel (smaller for mode select)
-	var logo_w = 220.0
+	# Logo inside panel (compacto)
+	var logo_w = 140.0
 	var logo_h = logo_w * (float(LogoTexture.get_height()) / float(LogoTexture.get_width()))
 	var logo_rect = TextureRect.new()
 	logo_rect.name = "MenuLogo"
 	logo_rect.texture = LogoTexture
-	logo_rect.position = Vector2((900 - logo_w) / 2.0, 16)
+	logo_rect.position = Vector2((1000 - logo_w) / 2.0, 12)
 	logo_rect.size = Vector2(logo_w, logo_h)
 	logo_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	logo_rect.stretch_mode = TextureRect.STRETCH_SCALE
+	logo_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	logo_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	mode_select_panel.add_child(logo_rect)
 
 	# Separator
-	_add_menu_separator(mode_select_panel, 16 + logo_h + 10)
+	_add_menu_separator(mode_select_panel, 12 + logo_h + 6)
 
 	# Mode label
 	var mode_label = Label.new()
 	mode_label.text = "SELECCIONA MODO DE JUEGO"
-	mode_label.position = Vector2(0, 16 + logo_h + 18)
-	mode_label.size = Vector2(900, 22)
+	mode_label.position = Vector2(0, 12 + logo_h + 12)
+	mode_label.size = Vector2(1000, 22)
 	mode_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	mode_label.add_theme_font_size_override("font_size", 14)
-	mode_label.add_theme_color_override("font_color", Color(0.91, 0.72, 0.29))
+	mode_label.add_theme_color_override("font_color", Color(0.85, 0.8, 0.65))
 	mode_select_panel.add_child(mode_label)
 
 	# 3 mode cards - horizontal layout
-	var card_w = 244
+	var card_w = 280
 	var card_h = 200
-	var gap_x = 14
+	var gap_x = 20
 	var total_w = card_w * 3 + gap_x * 2
-	var sx = int((900 - total_w) / 2)
+	var sx = int((1000 - total_w) / 2)
 
+	var cards_y = 12 + int(logo_h) + 40
 	var opt1 = _create_mode_card_v2(
-		Vector2(sx, 200), Vector2(card_w, card_h),
+		Vector2(sx, cards_y), Vector2(card_w, card_h),
 		"VS MAQUINA", "1 Jugador",
 		"Pelea contra la\nInteligencia Arcana",
-		Color(0.2, 0.85, 1.0), Color(0.04, 0.06, 0.14, 0.92)
+		Color(0.2, 0.85, 1.0), Color(0.03, 0.05, 0.12, 0.78)
 	)
 	opt1.name = "ModeCard0"
 	mode_select_panel.add_child(opt1)
 
 	var opt2 = _create_mode_card_v2(
-		Vector2(sx + card_w + gap_x, 200), Vector2(card_w, card_h),
+		Vector2(sx + card_w + gap_x, cards_y), Vector2(card_w, card_h),
 		"2 JUGADORES", "Local",
 		"Pelea contra un\namigo en tu pantalla",
-		Color(0.2, 1.0, 0.5), Color(0.04, 0.10, 0.05, 0.92)
+		Color(0.2, 1.0, 0.5), Color(0.03, 0.08, 0.04, 0.78)
 	)
 	opt2.name = "ModeCard1"
 	mode_select_panel.add_child(opt2)
 
 	var opt3 = _create_mode_card_v2(
-		Vector2(sx + (card_w + gap_x) * 2, 200), Vector2(card_w, card_h),
+		Vector2(sx + (card_w + gap_x) * 2, cards_y), Vector2(card_w, card_h),
 		"CAMPANA", "Camino del Nahual",
 		"Derrota a los 5\nmaestros arcanos",
-		Color(1.0, 0.8, 0.2), Color(0.10, 0.07, 0.02, 0.92)
+		Color(1.0, 0.8, 0.2), Color(0.07, 0.04, 0.02, 0.78)
 	)
 	opt3.name = "ModeCard2"
 	mode_select_panel.add_child(opt3)
 
 	# Separator
-	_add_menu_separator(mode_select_panel, 416)
+	_add_menu_separator(mode_select_panel, cards_y + card_h + 14)
 
 	# Difficulty selector
 	var diff_label = Label.new()
 	diff_label.text = "DIFICULTAD IA"
-	diff_label.position = Vector2(0, 428)
-	diff_label.size = Vector2(900, 22)
+	diff_label.position = Vector2(0, cards_y + card_h + 26)
+	diff_label.size = Vector2(1000, 22)
 	diff_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	diff_label.add_theme_font_size_override("font_size", 14)
-	diff_label.add_theme_color_override("font_color", Color(0.91, 0.72, 0.29))
+	diff_label.add_theme_color_override("font_color", Color(0.8, 0.75, 0.6))
 	mode_select_panel.add_child(diff_label)
 
 	var arrow_l = Label.new()
 	arrow_l.name = "DiffArrowL"
 	arrow_l.text = "<"
-	arrow_l.position = Vector2(300, 454)
+	var diff_y = cards_y + card_h + 50
+	arrow_l.position = Vector2(350, diff_y)
 	arrow_l.add_theme_font_size_override("font_size", 22)
-	arrow_l.add_theme_color_override("font_color", Color(0.91, 0.72, 0.29))
+	arrow_l.add_theme_color_override("font_color", Color(0.8, 0.75, 0.6))
 	mode_select_panel.add_child(arrow_l)
 
 	var diff_data = [
@@ -500,8 +513,8 @@ func _create_mode_select() -> void:
 	var diff_display = Label.new()
 	diff_display.name = "DiffDisplay"
 	diff_display.text = diff_data[ai_difficulty][0]
-	diff_display.position = Vector2(0, 452)
-	diff_display.size = Vector2(900, 28)
+	diff_display.position = Vector2(0, diff_y - 2)
+	diff_display.size = Vector2(1000, 28)
 	diff_display.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	diff_display.add_theme_font_size_override("font_size", 20)
 	diff_display.add_theme_color_override("font_color", diff_data[ai_difficulty][1])
@@ -510,17 +523,17 @@ func _create_mode_select() -> void:
 	var arrow_r = Label.new()
 	arrow_r.name = "DiffArrowR"
 	arrow_r.text = ">"
-	arrow_r.position = Vector2(570, 454)
+	arrow_r.position = Vector2(620, diff_y)
 	arrow_r.add_theme_font_size_override("font_size", 22)
-	arrow_r.add_theme_color_override("font_color", Color(0.91, 0.72, 0.29))
+	arrow_r.add_theme_color_override("font_color", Color(0.8, 0.75, 0.6))
 	mode_select_panel.add_child(arrow_r)
 
 	# Bottom hint
 	var bottom = Label.new()
 	bottom.text = "Izq/Der: Modo  |  ENTER: Seleccionar  |  Arriba/Abajo: Dificultad"
 	bottom.name = "BottomHint"
-	bottom.position = Vector2(0, 494)
-	bottom.size = Vector2(900, 24)
+	bottom.position = Vector2(0, diff_y + 36)
+	bottom.size = Vector2(1000, 24)
 	bottom.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	bottom.add_theme_font_size_override("font_size", 14)
 	bottom.add_theme_color_override("font_color", Color(0.45, 0.85, 0.45))
@@ -531,7 +544,7 @@ func _create_mode_select() -> void:
 
 	var config_hint = Label.new()
 	config_hint.text = "[TAB] CONFIGURACION"
-	config_hint.position = Vector2(690, 516)
+	config_hint.position = Vector2(790, diff_y + 72)
 	config_hint.add_theme_font_size_override("font_size", 11)
 	config_hint.add_theme_color_override("font_color", Color(0.5, 0.45, 0.35))
 	mode_select_panel.add_child(config_hint)
@@ -628,8 +641,8 @@ func _create_mode_card_v2(pos: Vector2, card_size: Vector2, title_text: String, 
 func _add_menu_separator(parent: Control, y: float):
 	var sep = ColorRect.new()
 	sep.position = Vector2(60, y)
-	sep.size = Vector2(780, 1)
-	sep.color = Color(0.76, 0.58, 0.3, 0.5)
+	sep.size = Vector2(parent.size.x - 120, 1)
+	sep.color = Color(0.7, 0.6, 0.4, 0.35)
 	parent.add_child(sep)
 
 
@@ -672,31 +685,7 @@ func _connect_signals() -> void:
 
 # ── Game Loop ──
 
-var _ss_timer = 0.0
-var _ss_step = 0
-
-func _take_screenshot(name: String) -> void:
-	await RenderingServer.frame_post_draw
-	var img = get_viewport().get_texture().get_image()
-	img.save_png("res://" + name + ".png")
-	print("Screenshot saved: " + name + ".png")
-
 func _process(delta: float) -> void:
-	# Auto-screenshots (debug)
-	_ss_timer += delta
-	if _ss_step == 0 and _ss_timer > 1.5:
-		_take_screenshot("ss_auto_title")
-		_ss_step = 1
-	elif _ss_step == 1 and _ss_timer > 2.5:
-		# Simular ENTER para ir al mode select
-		waiting_to_start = false
-		_fade_instructions(false)
-		AudioManager.set_battle_mode(true)
-		_ss_step = 2
-	elif _ss_step == 2 and _ss_timer > 4.0:
-		_take_screenshot("ss_auto_menu")
-		_ss_step = 3
-
 	# Mode selection screen
 	if game_mode == 0:
 		menu_time += delta
@@ -883,7 +872,7 @@ func _update_menu_highlight() -> void:
 	if not is_instance_valid(mode_select_panel):
 		return
 	var accents = [Color(0.2, 0.85, 1.0), Color(0.2, 1.0, 0.5), Color(1.0, 0.8, 0.2)]
-	var bgs = [Color(0.04, 0.06, 0.14, 0.92), Color(0.04, 0.10, 0.05, 0.92), Color(0.10, 0.07, 0.02, 0.92)]
+	var bgs = [Color(0.03, 0.05, 0.12, 0.78), Color(0.03, 0.08, 0.04, 0.78), Color(0.07, 0.04, 0.02, 0.78)]
 	for i in 3:
 		var card = mode_select_panel.get_node_or_null("ModeCard" + str(i))
 		if not card:
@@ -892,14 +881,14 @@ func _update_menu_highlight() -> void:
 		var accent = accents[i]
 		var s = StyleBoxFlat.new()
 		if selected:
-			s.bg_color = Color(accent.r * 0.18, accent.g * 0.18, accent.b * 0.18, 0.98)
+			s.bg_color = Color(accent.r * 0.12, accent.g * 0.12, accent.b * 0.12, 0.88)
 			s.border_color = accent
-			s.set_border_width_all(3)
-			s.shadow_color = Color(accent.r * 0.4, accent.g * 0.4, accent.b * 0.4, 0.5)
-			s.shadow_size = 14
+			s.set_border_width_all(2)
+			s.shadow_color = Color(accent.r * 0.3, accent.g * 0.3, accent.b * 0.3, 0.35)
+			s.shadow_size = 10
 		else:
 			s.bg_color = bgs[i]
-			s.border_color = Color(accent.r, accent.g, accent.b, 0.25)
+			s.border_color = Color(accent.r, accent.g, accent.b, 0.2)
 			s.set_border_width_all(1)
 			s.shadow_size = 0
 		s.set_corner_radius_all(10)
@@ -927,7 +916,10 @@ func _start_game(mode: int) -> void:
 		mode_select_panel.visible = false
 		mode_select_panel.scale = Vector2(1, 1)
 		menu_cursor = 0
-		_start_char_select()
+		if mode == 3 and _load_story_progress():
+			_start_story_select()
+		else:
+			_start_char_select()
 	)
 
 
@@ -1455,7 +1447,7 @@ func _draw_story_select_bg():
 			Color(0.95, 0.75, 0.1), Color(0.55, 0.15, 0.8), Color(1.0, 0.55, 0.1),
 		]
 		var boss_idx = story_opponents[story_cursor]
-		var bc = char_colors[boss_idx]
+		var bc = char_colors[boss_idx] if story_completed[story_cursor] else Color(0.6, 0.55, 0.4)
 		var pulse = sin(menu_time * 4.0) * 0.07 + 0.14
 		draw_circle(active_pos, 90, Color(bc.r, bc.g, bc.b, pulse * 0.5))
 		draw_circle(active_pos, 65, Color(bc.r, bc.g, bc.b, pulse))
@@ -2646,6 +2638,7 @@ func _start_char_select() -> void:
 	confirm_anim_timer = 0.0
 	p1_confirmed = false
 	p2_confirmed = false
+	ai_search_active = false
 	p1_char_idx = 0
 	p2_char_idx = 1
 	# Ocultar fondo opaco y logo para que se vean los previews y efectos
@@ -2868,16 +2861,39 @@ func _create_char_select_panel() -> void:
 		hint.text = "Flechas: elegir  |  ENTER: confirmar  |  ESC: volver"
 	char_select_panel.add_child(hint)
 
+	# Cursor indicators (Smash-style)
+	p1_cursor_indicator = Label.new()
+	p1_cursor_indicator.text = "\u25bc"
+	p1_cursor_indicator.position = Vector2(0, 575)
+	p1_cursor_indicator.size = Vector2(30, 24)
+	p1_cursor_indicator.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	p1_cursor_indicator.add_theme_font_size_override("font_size", 20)
+	p1_cursor_indicator.add_theme_color_override("font_color", Color(0.2, 0.9, 1.0))
+	char_select_panel.add_child(p1_cursor_indicator)
+
+	if game_mode != 3:
+		p2_cursor_indicator = Label.new()
+		p2_cursor_indicator.text = "\u25bc"
+		p2_cursor_indicator.position = Vector2(0, 575)
+		p2_cursor_indicator.size = Vector2(30, 24)
+		p2_cursor_indicator.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		p2_cursor_indicator.add_theme_font_size_override("font_size", 20)
+		p2_cursor_indicator.add_theme_color_override("font_color", Color(0.9, 0.3, 0.6))
+		char_select_panel.add_child(p2_cursor_indicator)
+	else:
+		p2_cursor_indicator = null
+
 	_update_char_select_display()
 
-	# Si es vs IA, seleccionar aleatorio para P2
+	# Si es vs IA, iniciar animacion de busqueda
 	if game_mode == 1:
-		p2_char_idx = randi() % 6
-		while p2_char_idx == p1_char_idx:
-			p2_char_idx = randi() % 6
-		p2_confirmed = true
-		_update_preview_p2()
-		_update_char_select_display()
+		ai_search_target = randi() % 6
+		while ai_search_target == p1_char_idx:
+			ai_search_target = randi() % 6
+		ai_search_active = true
+		ai_search_timer = 0.0
+		ai_search_elapsed = 0.0
+		ai_search_speed = 0.08
 
 
 func _process_char_select() -> void:
@@ -2888,6 +2904,9 @@ func _process_char_select() -> void:
 
 
 func _process_char_browse() -> void:
+	# AI search animation
+	if ai_search_active:
+		_process_ai_search(get_process_delta_time())
 	# P1 navigation
 	if Input.is_action_just_pressed("p1_move_right"):
 		p1_char_idx = (p1_char_idx + 1) % 6
@@ -2923,6 +2942,10 @@ func _trigger_char_confirm() -> void:
 
 	# En modo IA o story, auto-confirmar P2
 	if game_mode == 1:
+		if ai_search_active:
+			ai_search_active = false
+			p2_char_idx = ai_search_target
+			_update_preview_p2()
 		if p2_char_idx == p1_char_idx:
 			p2_char_idx = (p1_char_idx + 1) % 6
 			_update_preview_p2()
@@ -2945,6 +2968,28 @@ func _trigger_p2_confirm() -> void:
 	if p1_confirmed:
 		_start_confirm_animation()
 	else:
+		_update_char_select_display()
+		AudioManager.play_sfx("confirm_power")
+
+
+func _process_ai_search(delta) -> void:
+	ai_search_elapsed += delta
+	ai_search_timer += delta
+	if ai_search_timer >= ai_search_speed:
+		ai_search_timer = 0.0
+		var new_idx = randi() % 6
+		while new_idx == p2_char_idx:
+			new_idx = randi() % 6
+		p2_char_idx = new_idx
+		_update_preview_p2()
+		_update_char_select_display()
+		AudioManager.play_sfx("select")
+		ai_search_speed = minf(ai_search_speed + 0.025, 0.3)
+	if ai_search_elapsed >= 1.5:
+		ai_search_active = false
+		p2_char_idx = ai_search_target
+		p2_confirmed = true
+		_update_preview_p2()
 		_update_char_select_display()
 		AudioManager.play_sfx("confirm_power")
 
@@ -3040,8 +3085,12 @@ func _update_char_select_display() -> void:
 			p2_status_label.text = "LISTO!"
 			p2_status_label.add_theme_color_override("font_color", Color(0.3, 0.9, 0.3))
 		elif game_mode == 1:
-			p2_status_label.text = "(IA)"
-			p2_status_label.add_theme_color_override("font_color", Color(0.5, 0.5, 0.6))
+			if ai_search_active:
+				p2_status_label.text = "Buscando..."
+				p2_status_label.add_theme_color_override("font_color", Color(0.9, 0.6, 0.2))
+			else:
+				p2_status_label.text = "(IA)"
+				p2_status_label.add_theme_color_override("font_color", Color(0.5, 0.5, 0.6))
 		else:
 			p2_status_label.text = "< J/L > SPACE"
 			p2_status_label.add_theme_color_override("font_color", Color(0.5, 0.5, 0.6))
@@ -3066,9 +3115,18 @@ func _update_char_select_display() -> void:
 			style.border_color = colors[i].darkened(0.5)
 			style.set_border_width_all(2)
 
+	# Position cursor indicators
+	if is_instance_valid(p1_cursor_indicator) and char_select_cards.size() > p1_char_idx:
+		var p1_card = char_select_cards[p1_char_idx]
+		p1_cursor_indicator.position = Vector2(p1_card.position.x + p1_card.size.x / 2.0 - 15, p1_card.position.y - 26)
+	if is_instance_valid(p2_cursor_indicator) and game_mode != 3 and char_select_cards.size() > p2_char_idx:
+		var p2_card = char_select_cards[p2_char_idx]
+		p2_cursor_indicator.position = Vector2(p2_card.position.x + p2_card.size.x / 2.0 - 15, p2_card.position.y - 26)
+
 
 func _cancel_char_select() -> void:
 	char_select_active = false
+	ai_search_active = false
 	if is_instance_valid(preview_p1):
 		preview_p1.queue_free()
 	if is_instance_valid(preview_p2):
@@ -3139,6 +3197,7 @@ func _finish_char_select_story() -> void:
 		story_completed.append(false)
 	story_current_stage = 0
 	story_cursor = 0
+	_save_story_progress()
 
 	# Fade out char select
 	var tw = create_tween()
@@ -3247,7 +3306,8 @@ func _start_story_select() -> void:
 	for i in story_opponents.size():
 		var boss_idx = story_opponents[i]
 		var pos = positions[i]
-		var bc = char_colors[boss_idx]
+		var is_revealed = story_completed[i]
+		var bc = char_colors[boss_idx] if is_revealed else Color(0.45, 0.42, 0.38)
 
 		# Card panel
 		var card = Panel.new()
@@ -3283,7 +3343,7 @@ func _start_story_select() -> void:
 
 		# Boss initial/symbol (large letter)
 		var symbol = Label.new()
-		symbol.text = char_names[boss_idx].substr(0, 1)
+		symbol.text = char_names[boss_idx].substr(0, 1) if is_revealed else "?"
 		symbol.position = Vector2(0, 22)
 		symbol.size = Vector2(170, 48)
 		symbol.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -3294,7 +3354,7 @@ func _start_story_select() -> void:
 
 		# Boss name
 		var nl = Label.new()
-		nl.text = char_names[boss_idx]
+		nl.text = char_names[boss_idx] if is_revealed else "???"
 		nl.position = Vector2(0, 74)
 		nl.size = Vector2(170, 24)
 		nl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -3342,6 +3402,7 @@ func _start_story_select() -> void:
 
 	# Boss info label (bottom)
 	var cur_boss = story_opponents[story_cursor]
+	var cur_revealed = story_completed[story_cursor]
 
 	# Temple name
 	var temple_info = Label.new()
@@ -3356,12 +3417,12 @@ func _start_story_select() -> void:
 
 	var boss_info = Label.new()
 	boss_info.name = "BossInfo"
-	boss_info.text = char_names[cur_boss]
+	boss_info.text = char_names[cur_boss] if cur_revealed else "???"
 	boss_info.position = Vector2(0, 562)
 	boss_info.size = Vector2(1280, 46)
 	boss_info.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	boss_info.add_theme_font_size_override("font_size", 34)
-	boss_info.add_theme_color_override("font_color", char_colors[cur_boss])
+	boss_info.add_theme_color_override("font_color", char_colors[cur_boss] if cur_revealed else Color(0.5, 0.48, 0.42))
 	story_select_panel.add_child(boss_info)
 
 	var boss_desc_names = [
@@ -3374,7 +3435,7 @@ func _start_story_select() -> void:
 	]
 	var boss_desc = Label.new()
 	boss_desc.name = "BossDesc"
-	boss_desc.text = boss_desc_names[cur_boss]
+	boss_desc.text = boss_desc_names[cur_boss] if cur_revealed else "Un poderoso maestro te espera..."
 	boss_desc.position = Vector2(0, 606)
 	boss_desc.size = Vector2(1280, 24)
 	boss_desc.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -3463,16 +3524,17 @@ func _update_story_select_display() -> void:
 		return
 
 	var boss_idx = story_opponents[story_cursor]
+	var cur_revealed = story_completed[story_cursor]
 	var temple = story_select_panel.get_node_or_null("TempleInfo")
 	if temple:
 		temple.text = temple_names[boss_idx]
 	var info = story_select_panel.get_node_or_null("BossInfo")
 	if info:
-		info.text = char_names[boss_idx]
-		info.add_theme_color_override("font_color", char_colors[boss_idx])
+		info.text = char_names[boss_idx] if cur_revealed else "???"
+		info.add_theme_color_override("font_color", char_colors[boss_idx] if cur_revealed else Color(0.5, 0.48, 0.42))
 	var desc = story_select_panel.get_node_or_null("BossDesc")
 	if desc:
-		desc.text = char_descs[boss_idx]
+		desc.text = char_descs[boss_idx] if cur_revealed else "Un poderoso maestro te espera..."
 	var status = story_select_panel.get_node_or_null("StageStatus")
 	if status:
 		if story_completed[story_cursor]:
@@ -3487,7 +3549,7 @@ func _update_story_select_display() -> void:
 		var card = story_select_panel.get_node_or_null("StageCard" + str(i))
 		if not card:
 			continue
-		var bc = char_colors[story_opponents[i]]
+		var bc = char_colors[story_opponents[i]] if story_completed[i] else Color(0.45, 0.42, 0.38)
 		var cs = StyleBoxFlat.new()
 		if story_completed[i]:
 			cs.bg_color = Color(0.08, 0.14, 0.06, 0.92)
@@ -3731,6 +3793,7 @@ func _story_match_result() -> void:
 	if p1_wins >= _rounds_to_win():
 		# Jugador gano - marcar stage completado
 		story_completed[story_current_stage] = true
+		_save_story_progress()
 		AudioManager.play_sfx("stage_clear")
 
 		# Checar si todos completados
@@ -4098,6 +4161,7 @@ func _cleanup_battle() -> void:
 
 
 func _show_story_victory() -> void:
+	_delete_story_progress()
 	# Limpiar batalla primero
 	_cleanup_battle()
 	game_over = true
@@ -4197,6 +4261,55 @@ func _show_story_victory() -> void:
 	waiting_to_start = false
 	# Usamos un flag especial
 	game_over = true  # Reusar game_over para detectar el input
+
+
+# ── Story Progress Save/Load ──
+
+func _save_story_progress() -> void:
+	var cfg = ConfigFile.new()
+	cfg.set_value("story", "player_char", story_player_char)
+	cfg.set_value("story", "current_stage", story_current_stage)
+	var opp_str = ""
+	for i in story_opponents.size():
+		if i > 0:
+			opp_str += ","
+		opp_str += str(story_opponents[i])
+	cfg.set_value("story", "opponents", opp_str)
+	var comp_str = ""
+	for i in story_completed.size():
+		if i > 0:
+			comp_str += ","
+		comp_str += "1" if story_completed[i] else "0"
+	cfg.set_value("story", "completed", comp_str)
+	cfg.save("user://story_progress.cfg")
+
+
+func _load_story_progress() -> bool:
+	var cfg = ConfigFile.new()
+	var err = cfg.load("user://story_progress.cfg")
+	if err != OK:
+		return false
+	story_player_char = cfg.get_value("story", "player_char", 0)
+	story_current_stage = cfg.get_value("story", "current_stage", 0)
+	var opp_str = cfg.get_value("story", "opponents", "")
+	var comp_str = cfg.get_value("story", "completed", "")
+	if opp_str == "" or comp_str == "":
+		return false
+	story_opponents = []
+	for s in opp_str.split(","):
+		story_opponents.append(int(s))
+	story_completed = []
+	for s in comp_str.split(","):
+		story_completed.append(s == "1")
+	if story_opponents.size() == 0 or story_completed.size() != story_opponents.size():
+		return false
+	return true
+
+
+func _delete_story_progress() -> void:
+	var dir = DirAccess.open("user://")
+	if dir:
+		dir.remove("story_progress.cfg")
 
 
 # ── Settings System ──
