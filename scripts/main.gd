@@ -98,8 +98,13 @@ var story_select_panel: Panel
 var story_cursor = 0
 var boss_intro_active = false
 
+# Title screen
+var title_active = true
+var title_panel: Panel
+var title_blink_time = 0.0
+
 # Menu cursor
-var menu_cursor = 0  # 0=VS IA, 1=Campana, 2=2 Jugadores Local
+var menu_cursor = 0  # 0=VS IA, 1=2P Local, 2=Campana
 
 # Settings
 var settings_active = false
@@ -120,6 +125,11 @@ var menu_time = 0.0
 var menu_magic_angle = 0.0
 var arena_time = 0.0
 
+# Pause menu
+var pause_active = false
+var pause_panel: Panel
+var pause_cursor = 0
+
 # Arena ambient particles
 var arena_particles = []
 const ARENA_PARTICLE_COUNT = 30
@@ -135,7 +145,7 @@ func _ready() -> void:
 	_create_brightness_overlay()
 	_apply_settings()
 	_init_menu_particles()
-	_create_mode_select()
+	_create_title_screen()
 
 
 # ── Input Setup ──
@@ -286,6 +296,105 @@ func _update_arena_particles(delta):
 			p.phase = np.phase
 
 
+# ── Title Screen ──
+
+func _create_title_screen() -> void:
+	title_active = true
+	title_panel = Panel.new()
+	title_panel.position = Vector2(0, 0)
+	title_panel.size = Vector2(1280, 720)
+	var ts = StyleBoxFlat.new()
+	ts.bg_color = Color(0, 0, 0, 0)
+	title_panel.add_theme_stylebox_override("panel", ts)
+	title_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	hud.add_child(title_panel)
+
+	# Vignette overlay for depth
+	var vignette = ColorRect.new()
+	vignette.position = Vector2.ZERO
+	vignette.size = Vector2(1280, 720)
+	vignette.color = Color(0.0, 0.0, 0.0, 0.35)
+	vignette.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	title_panel.add_child(vignette)
+
+	# Logo grande centrado
+	var logo_w = 420.0
+	var logo_h = logo_w * (float(LogoTexture.get_height()) / float(LogoTexture.get_width()))
+	var logo_rect = TextureRect.new()
+	logo_rect.name = "TitleLogo"
+	logo_rect.texture = LogoTexture
+	logo_rect.position = Vector2(640.0 - logo_w / 2.0, 120)
+	logo_rect.size = Vector2(logo_w, logo_h)
+	logo_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	logo_rect.stretch_mode = TextureRect.STRETCH_SCALE
+	logo_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	title_panel.add_child(logo_rect)
+
+	# Subtitle
+	var sub = Label.new()
+	sub.text = "DUELO ARCANO"
+	sub.position = Vector2(0, 120 + logo_h + 10)
+	sub.size = Vector2(1280, 40)
+	sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	sub.add_theme_font_size_override("font_size", 20)
+	sub.add_theme_color_override("font_color", Color(0.76, 0.58, 0.3, 0.8))
+	title_panel.add_child(sub)
+
+	# Decorative line
+	var deco = ColorRect.new()
+	deco.position = Vector2(440, 120 + logo_h + 55)
+	deco.size = Vector2(400, 2)
+	deco.color = Color(0.76, 0.58, 0.3, 0.5)
+	title_panel.add_child(deco)
+
+	# Version / flavor text
+	var flavor = Label.new()
+	flavor.text = "Invoca el poder de los antiguos nahuales"
+	flavor.position = Vector2(0, 120 + logo_h + 65)
+	flavor.size = Vector2(1280, 30)
+	flavor.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	flavor.add_theme_font_size_override("font_size", 14)
+	flavor.add_theme_color_override("font_color", Color(0.6, 0.55, 0.45, 0.7))
+	title_panel.add_child(flavor)
+
+	# "PRESIONA ENTER" - animated
+	var enter_label = Label.new()
+	enter_label.name = "EnterPrompt"
+	enter_label.text = ">>> PRESIONA ENTER <<<"
+	enter_label.position = Vector2(0, 540)
+	enter_label.size = Vector2(1280, 40)
+	enter_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	enter_label.add_theme_font_size_override("font_size", 22)
+	enter_label.add_theme_color_override("font_color", Color(0.95, 0.85, 0.3))
+	title_panel.add_child(enter_label)
+
+	# Bottom credits
+	var credits = Label.new()
+	credits.text = "Nahual: Duelo Arcano"
+	credits.position = Vector2(0, 680)
+	credits.size = Vector2(1280, 20)
+	credits.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	credits.add_theme_font_size_override("font_size", 11)
+	credits.add_theme_color_override("font_color", Color(0.4, 0.35, 0.3, 0.5))
+	title_panel.add_child(credits)
+
+
+func _dismiss_title() -> void:
+	title_active = false
+	AudioManager.play_sfx("confirm_power")
+	var tw = create_tween()
+	tw.tween_property(title_panel, "modulate", Color(1, 1, 1, 0), 0.5)
+	tw.tween_callback(func():
+		title_panel.queue_free()
+		title_panel = null
+		_create_mode_select()
+		# Fade in mode select
+		mode_select_panel.modulate = Color(1, 1, 1, 0)
+		var tw2 = create_tween()
+		tw2.tween_property(mode_select_panel, "modulate", Color(1, 1, 1, 1), 0.4)
+	)
+
+
 # ── Mode Select ──
 
 func _create_mode_select() -> void:
@@ -293,99 +402,96 @@ func _create_mode_select() -> void:
 	mode_select_panel.position = Vector2(190, 70)
 	mode_select_panel.size = Vector2(900, 580)
 	var ps = StyleBoxFlat.new()
-	ps.bg_color = Color(0.1, 0.07, 0.09, 1.0)
-	ps.border_color = Color(0.76, 0.58, 0.3, 0.95)
-	ps.set_border_width_all(3)
-	ps.set_corner_radius_all(8)
-	ps.shadow_color = Color(0.55, 0.41, 0.08, 0.5)
-	ps.shadow_size = 30
+	ps.bg_color = Color(0.04, 0.03, 0.06, 0.7)
+	ps.border_color = Color(0.76, 0.58, 0.3, 0.5)
+	ps.set_border_width_all(2)
+	ps.set_corner_radius_all(10)
+	ps.shadow_color = Color(0, 0, 0, 0.6)
+	ps.shadow_size = 20
 	mode_select_panel.add_theme_stylebox_override("panel", ps)
 	hud.add_child(mode_select_panel)
 
-	# Logo
-	var logo_w = 280.0
+	# Logo inside panel (smaller for mode select)
+	var logo_w = 220.0
 	var logo_h = logo_w * (float(LogoTexture.get_height()) / float(LogoTexture.get_width()))
 	var logo_rect = TextureRect.new()
 	logo_rect.name = "MenuLogo"
 	logo_rect.texture = LogoTexture
-	logo_rect.set_anchors_preset(Control.PRESET_TOP_LEFT)
-	logo_rect.set_deferred("position", Vector2(640.0 - logo_w / 2.0, 78))
-	logo_rect.set_deferred("size", Vector2(logo_w, logo_h))
-	logo_rect.custom_minimum_size = Vector2.ZERO
+	logo_rect.position = Vector2((900 - logo_w) / 2.0, 16)
+	logo_rect.size = Vector2(logo_w, logo_h)
 	logo_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	logo_rect.stretch_mode = TextureRect.STRETCH_SCALE
 	logo_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	hud.add_child(logo_rect)
+	mode_select_panel.add_child(logo_rect)
 
 	# Separator
-	_add_menu_separator(mode_select_panel, 160)
+	_add_menu_separator(mode_select_panel, 16 + logo_h + 10)
 
 	# Mode label
 	var mode_label = Label.new()
 	mode_label.text = "SELECCIONA MODO DE JUEGO"
-	mode_label.position = Vector2(0, 172)
+	mode_label.position = Vector2(0, 16 + logo_h + 18)
 	mode_label.size = Vector2(900, 22)
 	mode_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	mode_label.add_theme_font_size_override("font_size", 14)
 	mode_label.add_theme_color_override("font_color", Color(0.91, 0.72, 0.29))
 	mode_select_panel.add_child(mode_label)
 
-	# Option 1 - vs AI (main mode)
-	var opt1 = _create_mode_card(
-		Vector2(60, 200), Vector2(780, 82),
-		"", "1 JUGADOR vs INTELIGENCIA ARCANA",
-		"Flechas mover  |  E golpe  |  1-2-3 magia  |  Q defender  |  W esquivar",
-		"",
-		Color(0.2, 0.85, 1.0), Color(0.05, 0.08, 0.18, 0.95)
+	# 3 mode cards - horizontal layout
+	var card_w = 244
+	var card_h = 200
+	var gap_x = 14
+	var total_w = card_w * 3 + gap_x * 2
+	var sx = int((900 - total_w) / 2)
+
+	var opt1 = _create_mode_card_v2(
+		Vector2(sx, 200), Vector2(card_w, card_h),
+		"VS MAQUINA", "1 Jugador",
+		"Pelea contra la\nInteligencia Arcana",
+		Color(0.2, 0.85, 1.0), Color(0.04, 0.06, 0.14, 0.92)
 	)
 	opt1.name = "ModeCard0"
 	mode_select_panel.add_child(opt1)
 
-	# Option 2 - 2 Jugadores Local
-	var opt2 = _create_mode_card(
-		Vector2(60, 290), Vector2(780, 82),
-		"", "2 JUGADORES LOCAL",
-		"P1: Flechas + E  |  P2: IJKL + SPACE",
-		"Pelea contra un amigo en la misma pantalla",
-		Color(0.2, 1.0, 0.5), Color(0.04, 0.12, 0.06, 0.95)
+	var opt2 = _create_mode_card_v2(
+		Vector2(sx + card_w + gap_x, 200), Vector2(card_w, card_h),
+		"2 JUGADORES", "Local",
+		"Pelea contra un\namigo en tu pantalla",
+		Color(0.2, 1.0, 0.5), Color(0.04, 0.10, 0.05, 0.92)
 	)
 	opt2.name = "ModeCard1"
 	mode_select_panel.add_child(opt2)
 
-	# Option 3 - Campana (Story Mode)
-	var opt3 = _create_mode_card(
-		Vector2(60, 380), Vector2(780, 82),
-		"", "CAMPANA: CAMINO DEL NAHUAL",
-		"Derrota a los 5 maestros en combate secuencial",
-		"Elige tu guerrero y conquista cada templo  |  5 MAESTROS",
-		Color(1.0, 0.8, 0.2), Color(0.12, 0.08, 0.02, 0.95)
+	var opt3 = _create_mode_card_v2(
+		Vector2(sx + (card_w + gap_x) * 2, 200), Vector2(card_w, card_h),
+		"CAMPANA", "Camino del Nahual",
+		"Derrota a los 5\nmaestros arcanos",
+		Color(1.0, 0.8, 0.2), Color(0.10, 0.07, 0.02, 0.92)
 	)
 	opt3.name = "ModeCard2"
 	mode_select_panel.add_child(opt3)
 
 	# Separator
-	_add_menu_separator(mode_select_panel, 470)
+	_add_menu_separator(mode_select_panel, 416)
 
-	# Difficulty selector - left to right with arrows
+	# Difficulty selector
 	var diff_label = Label.new()
 	diff_label.text = "DIFICULTAD IA"
-	diff_label.position = Vector2(0, 482)
+	diff_label.position = Vector2(0, 428)
 	diff_label.size = Vector2(900, 22)
 	diff_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	diff_label.add_theme_font_size_override("font_size", 14)
 	diff_label.add_theme_color_override("font_color", Color(0.91, 0.72, 0.29))
 	mode_select_panel.add_child(diff_label)
 
-	# Arrow left
 	var arrow_l = Label.new()
 	arrow_l.name = "DiffArrowL"
 	arrow_l.text = "<"
-	arrow_l.position = Vector2(270, 506)
-	arrow_l.add_theme_font_size_override("font_size", 24)
+	arrow_l.position = Vector2(300, 454)
+	arrow_l.add_theme_font_size_override("font_size", 22)
 	arrow_l.add_theme_color_override("font_color", Color(0.91, 0.72, 0.29))
 	mode_select_panel.add_child(arrow_l)
 
-	# Difficulty options centered
 	var diff_data = [
 		["FACIL", Color(0.3, 0.9, 0.3)],
 		["NORMAL", Color(1.0, 0.8, 0.2)],
@@ -394,42 +500,39 @@ func _create_mode_select() -> void:
 	var diff_display = Label.new()
 	diff_display.name = "DiffDisplay"
 	diff_display.text = diff_data[ai_difficulty][0]
-	diff_display.position = Vector2(0, 504)
+	diff_display.position = Vector2(0, 452)
 	diff_display.size = Vector2(900, 28)
 	diff_display.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	diff_display.add_theme_font_size_override("font_size", 20)
 	diff_display.add_theme_color_override("font_color", diff_data[ai_difficulty][1])
 	mode_select_panel.add_child(diff_display)
 
-	# Arrow right
 	var arrow_r = Label.new()
 	arrow_r.name = "DiffArrowR"
 	arrow_r.text = ">"
-	arrow_r.position = Vector2(600, 506)
-	arrow_r.add_theme_font_size_override("font_size", 24)
+	arrow_r.position = Vector2(570, 454)
+	arrow_r.add_theme_font_size_override("font_size", 22)
 	arrow_r.add_theme_color_override("font_color", Color(0.91, 0.72, 0.29))
 	mode_select_panel.add_child(arrow_r)
 
 	# Bottom hint
 	var bottom = Label.new()
-	bottom.text = "Arriba/Abajo: Navegar  |  ENTER: Seleccionar  |  Izq/Der: Dificultad"
+	bottom.text = "Izq/Der: Modo  |  ENTER: Seleccionar  |  Arriba/Abajo: Dificultad"
 	bottom.name = "BottomHint"
-	bottom.position = Vector2(0, 540)
+	bottom.position = Vector2(0, 494)
 	bottom.size = Vector2(900, 24)
 	bottom.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	bottom.add_theme_font_size_override("font_size", 16)
+	bottom.add_theme_font_size_override("font_size", 14)
 	bottom.add_theme_color_override("font_color", Color(0.45, 0.85, 0.45))
 	mode_select_panel.add_child(bottom)
-	# Pulse animation
 	var tw = create_tween().set_loops()
-	tw.tween_property(bottom, "modulate", Color(1, 1, 1, 0.2), 0.9).set_ease(Tween.EASE_IN_OUT)
+	tw.tween_property(bottom, "modulate", Color(1, 1, 1, 0.3), 0.9).set_ease(Tween.EASE_IN_OUT)
 	tw.tween_property(bottom, "modulate", Color(1, 1, 1, 1.0), 0.9).set_ease(Tween.EASE_IN_OUT)
 
-	# Config hint
 	var config_hint = Label.new()
 	config_hint.text = "[TAB] CONFIGURACION"
-	config_hint.position = Vector2(690, 558)
-	config_hint.add_theme_font_size_override("font_size", 12)
+	config_hint.position = Vector2(690, 516)
+	config_hint.add_theme_font_size_override("font_size", 11)
 	config_hint.add_theme_color_override("font_color", Color(0.5, 0.45, 0.35))
 	mode_select_panel.add_child(config_hint)
 
@@ -437,64 +540,87 @@ func _create_mode_select() -> void:
 	_update_menu_highlight()
 
 
-func _create_mode_card(pos: Vector2, card_size: Vector2, key: String, title_text: String, desc1: String, desc2: String, accent: Color, bg: Color) -> Panel:
+func _create_mode_card_v2(pos: Vector2, card_size: Vector2, title_text: String, subtitle: String, desc: String, accent: Color, bg: Color) -> Panel:
 	var card = Panel.new()
 	card.position = pos
 	card.size = card_size
+	card.clip_contents = true
 	var s = StyleBoxFlat.new()
 	s.bg_color = bg
-	s.border_color = Color(accent.r, accent.g, accent.b, 0.6)
+	s.border_color = Color(accent.r, accent.g, accent.b, 0.5)
 	s.set_border_width_all(2)
-	s.set_corner_radius_all(12)
-	s.shadow_color = Color(accent.r * 0.4, accent.g * 0.4, accent.b * 0.4, 0.3)
-	s.shadow_size = 12
+	s.set_corner_radius_all(10)
+	s.shadow_color = Color(accent.r * 0.3, accent.g * 0.3, accent.b * 0.3, 0.25)
+	s.shadow_size = 8
 	card.add_theme_stylebox_override("panel", s)
 
-	# Selection arrow (instead of keycap)
-	var arrow = Label.new()
-	arrow.name = "Arrow"
-	arrow.text = ">"
-	arrow.position = Vector2(18, card_size.y / 2.0 - 18)
-	arrow.add_theme_font_size_override("font_size", 28)
-	arrow.add_theme_color_override("font_color", Color(0.95, 0.85, 0.3))
-	arrow.visible = false
-	card.add_child(arrow)
+	# Top accent bar
+	var top_bar = ColorRect.new()
+	top_bar.position = Vector2(0, 0)
+	top_bar.size = Vector2(card_size.x, 4)
+	top_bar.color = accent
+	card.add_child(top_bar)
 
-	if key != "":
-		var kc = _create_keycap(key, Vector2(22, card_size.y / 2.0 - 14), Color(0.45, 1.0, 0.55))
-		card.add_child(kc)
+	# Icon/symbol (large letter)
+	var icon_lbl = Label.new()
+	icon_lbl.name = "Icon"
+	icon_lbl.text = title_text.substr(0, 1)
+	icon_lbl.position = Vector2(0, 20)
+	icon_lbl.size = Vector2(card_size.x, 60)
+	icon_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	icon_lbl.add_theme_font_size_override("font_size", 48)
+	icon_lbl.add_theme_color_override("font_color", Color(accent.r, accent.g, accent.b, 0.25))
+	card.add_child(icon_lbl)
 
-	# Title
+	# Title centered
 	var t = Label.new()
 	t.text = title_text
-	t.position = Vector2(50, 20)
-	t.add_theme_font_size_override("font_size", 24)
+	t.position = Vector2(0, 80)
+	t.size = Vector2(card_size.x, 28)
+	t.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	t.add_theme_font_size_override("font_size", 18)
 	t.add_theme_color_override("font_color", accent)
 	card.add_child(t)
 
-	# Desc 1
-	var d1 = Label.new()
-	d1.text = desc1
-	d1.position = Vector2(50, 56)
-	d1.add_theme_font_size_override("font_size", 14)
-	d1.add_theme_color_override("font_color", Color(0.6, 0.65, 0.75))
-	card.add_child(d1)
+	# Subtitle
+	var st = Label.new()
+	st.text = subtitle
+	st.position = Vector2(0, 104)
+	st.size = Vector2(card_size.x, 22)
+	st.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	st.add_theme_font_size_override("font_size", 13)
+	st.add_theme_color_override("font_color", Color(accent.r * 0.7, accent.g * 0.7, accent.b * 0.7, 0.8))
+	card.add_child(st)
 
-	# Desc 2
-	if desc2 != "":
-		var d2 = Label.new()
-		d2.text = desc2
-		d2.position = Vector2(50, 80)
-		d2.add_theme_font_size_override("font_size", 14)
-		d2.add_theme_color_override("font_color", Color(0.6, 0.65, 0.75))
-		card.add_child(d2)
+	# Separator line
+	var sep = ColorRect.new()
+	sep.position = Vector2(40, 130)
+	sep.size = Vector2(card_size.x - 80, 1)
+	sep.color = Color(accent.r, accent.g, accent.b, 0.3)
+	card.add_child(sep)
 
-	# Decorative accent line at left
-	var accent_line = ColorRect.new()
-	accent_line.position = Vector2(0, 10)
-	accent_line.size = Vector2(4, card_size.y - 20)
-	accent_line.color = accent
-	card.add_child(accent_line)
+	# Description (multiline)
+	var d = Label.new()
+	d.text = desc
+	d.position = Vector2(12, 140)
+	d.size = Vector2(card_size.x - 24, 50)
+	d.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	d.add_theme_font_size_override("font_size", 12)
+	d.add_theme_color_override("font_color", Color(0.6, 0.62, 0.7))
+	d.autowrap_mode = TextServer.AUTOWRAP_WORD
+	card.add_child(d)
+
+	# Selection arrow (bottom)
+	var arrow = Label.new()
+	arrow.name = "Arrow"
+	arrow.text = "^"
+	arrow.position = Vector2(0, card_size.y - 24)
+	arrow.size = Vector2(card_size.x, 20)
+	arrow.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	arrow.add_theme_font_size_override("font_size", 14)
+	arrow.add_theme_color_override("font_color", Color(0.95, 0.85, 0.3))
+	arrow.visible = false
+	card.add_child(arrow)
 
 	return card
 
@@ -546,29 +672,65 @@ func _connect_signals() -> void:
 
 # ── Game Loop ──
 
+var _ss_timer = 0.0
+var _ss_step = 0
+
+func _take_screenshot(name: String) -> void:
+	await RenderingServer.frame_post_draw
+	var img = get_viewport().get_texture().get_image()
+	img.save_png("res://" + name + ".png")
+	print("Screenshot saved: " + name + ".png")
+
 func _process(delta: float) -> void:
+	# Auto-screenshots (debug)
+	_ss_timer += delta
+	if _ss_step == 0 and _ss_timer > 1.5:
+		_take_screenshot("ss_auto_title")
+		_ss_step = 1
+	elif _ss_step == 1 and _ss_timer > 2.5:
+		# Simular ENTER para ir al mode select
+		waiting_to_start = false
+		_fade_instructions(false)
+		AudioManager.set_battle_mode(true)
+		_ss_step = 2
+	elif _ss_step == 2 and _ss_timer > 4.0:
+		_take_screenshot("ss_auto_menu")
+		_ss_step = 3
+
 	# Mode selection screen
 	if game_mode == 0:
 		menu_time += delta
 		menu_magic_angle += delta * 0.3
 		_update_menu_particles(delta)
 		queue_redraw()
+		# Title screen phase
+		if title_active:
+			title_blink_time += delta
+			if is_instance_valid(title_panel):
+				var prompt = title_panel.get_node_or_null("EnterPrompt")
+				if prompt:
+					var alpha = 0.4 + 0.6 * abs(sin(title_blink_time * 2.0))
+					prompt.modulate = Color(1, 1, 1, alpha)
+			if Input.is_action_just_pressed("ui_confirm") or Input.is_action_just_pressed("ui_accept"):
+				_dismiss_title()
+			return
 		if settings_active:
 			_process_settings(delta)
 			return
-		# Arrow navigation for menu (3 options)
-		if Input.is_action_just_pressed("p1_move_down"):
+		# Left/Right navigation for mode cards (horizontal)
+		if Input.is_action_just_pressed("p1_move_right"):
 			menu_cursor = (menu_cursor + 1) % 3
 			_update_menu_highlight()
 			AudioManager.play_sfx("select")
-		elif Input.is_action_just_pressed("p1_move_up"):
+		elif Input.is_action_just_pressed("p1_move_left"):
 			menu_cursor = (menu_cursor + 2) % 3
 			_update_menu_highlight()
 			AudioManager.play_sfx("select")
-		if Input.is_action_just_pressed("p1_move_left"):
-			_set_difficulty(maxi(ai_difficulty - 1, 0))
-		elif Input.is_action_just_pressed("p1_move_right"):
+		# Up/Down for difficulty
+		if Input.is_action_just_pressed("p1_move_up"):
 			_set_difficulty(mini(ai_difficulty + 1, 2))
+		elif Input.is_action_just_pressed("p1_move_down"):
+			_set_difficulty(maxi(ai_difficulty - 1, 0))
 		if Input.is_action_just_pressed("ui_tab"):
 			_open_settings()
 		elif Input.is_action_just_pressed("ui_confirm") or Input.is_action_just_pressed("ui_accept"):
@@ -626,8 +788,12 @@ func _process(delta: float) -> void:
 	if round_intro_active:
 		return
 
+	if pause_active:
+		_process_pause()
+		return
+
 	if Input.is_action_just_pressed("ui_escape"):
-		get_tree().reload_current_scene()
+		_toggle_pause()
 		return
 
 	if game_over:
@@ -717,7 +883,7 @@ func _update_menu_highlight() -> void:
 	if not is_instance_valid(mode_select_panel):
 		return
 	var accents = [Color(0.2, 0.85, 1.0), Color(0.2, 1.0, 0.5), Color(1.0, 0.8, 0.2)]
-	var bgs = [Color(0.05, 0.08, 0.18, 0.95), Color(0.04, 0.12, 0.06, 0.95), Color(0.12, 0.08, 0.02, 0.95)]
+	var bgs = [Color(0.04, 0.06, 0.14, 0.92), Color(0.04, 0.10, 0.05, 0.92), Color(0.10, 0.07, 0.02, 0.92)]
 	for i in 3:
 		var card = mode_select_panel.get_node_or_null("ModeCard" + str(i))
 		if not card:
@@ -726,18 +892,24 @@ func _update_menu_highlight() -> void:
 		var accent = accents[i]
 		var s = StyleBoxFlat.new()
 		if selected:
-			s.bg_color = Color(accent.r * 0.22, accent.g * 0.22, accent.b * 0.22, 0.98)
+			s.bg_color = Color(accent.r * 0.18, accent.g * 0.18, accent.b * 0.18, 0.98)
 			s.border_color = accent
 			s.set_border_width_all(3)
-			s.shadow_color = Color(accent.r * 0.3, accent.g * 0.3, accent.b * 0.3, 0.4)
-			s.shadow_size = 16
+			s.shadow_color = Color(accent.r * 0.4, accent.g * 0.4, accent.b * 0.4, 0.5)
+			s.shadow_size = 14
 		else:
 			s.bg_color = bgs[i]
-			s.border_color = Color(accent.r, accent.g, accent.b, 0.3)
+			s.border_color = Color(accent.r, accent.g, accent.b, 0.25)
 			s.set_border_width_all(1)
-			s.shadow_size = 4
-		s.set_corner_radius_all(12)
+			s.shadow_size = 0
+		s.set_corner_radius_all(10)
 		card.add_theme_stylebox_override("panel", s)
+		# Scale effect for selected card
+		if selected:
+			card.scale = Vector2(1.04, 1.04)
+			card.pivot_offset = card.size / 2.0
+		else:
+			card.scale = Vector2(1.0, 1.0)
 		var arrow = card.get_node_or_null("Arrow")
 		if arrow:
 			arrow.visible = selected
@@ -851,10 +1023,12 @@ func _end_round(winner: int) -> void:
 
 
 func _next_round() -> void:
-	# Hide banner
+	# Fade-out banner
 	var banner_bg = hud.get_node("BannerBG")
 	if banner_bg:
-		banner_bg.visible = false
+		var tw = create_tween()
+		tw.tween_property(banner_bg, "modulate", Color(1, 1, 1, 0), 0.4)
+		tw.tween_callback(func(): banner_bg.visible = false)
 
 	# Clear orbs
 	for orb in get_tree().get_nodes_in_group("orbs"):
@@ -1791,11 +1965,11 @@ func _create_hud() -> void:
 	menu_bg.stretch_mode = TextureRect.STRETCH_SCALE
 	menu_bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	hud.add_child(menu_bg)
-	# Overlay oscuro para legibilidad
+	# Overlay oscuro para legibilidad (sutil para que se vea la imagen)
 	var menu_bg_overlay = ColorRect.new()
 	menu_bg_overlay.position = Vector2.ZERO
 	menu_bg_overlay.size = Vector2(1280, 720)
-	menu_bg_overlay.color = Color(0.0, 0.0, 0.0, 0.4)
+	menu_bg_overlay.color = Color(0.0, 0.0, 0.02, 0.25)
 	menu_bg_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	menu_bg.add_child(menu_bg_overlay)
 
@@ -1826,7 +2000,7 @@ func _create_hud() -> void:
 	timer_bg.size = Vector2(150, 62)
 	var tbs = StyleBoxFlat.new()
 	tbs.bg_color = Color(0.03, 0.03, 0.08, 0.8)
-	tbs.border_color = Color(0.35, 0.35, 0.55, 0.5)
+	tbs.border_color = Color(0.45, 0.45, 0.65, 0.5)
 	tbs.set_border_width_all(1)
 	tbs.set_corner_radius_all(8)
 	tbs.corner_radius_top_left = 0
@@ -1982,7 +2156,7 @@ func _create_hud() -> void:
 	hint.text = "E: Golpe | 1/2/3: Magia | Q: Defender | W: Esquivar | TAB: Info"
 	hint.position = Vector2(360, 694)
 	hint.add_theme_font_size_override("font_size", 11)
-	hint.add_theme_color_override("font_color", Color(0.35, 0.35, 0.5))
+	hint.add_theme_color_override("font_color", Color(0.55, 0.55, 0.7))
 	hint.name = "ControlsHint"
 	hint.visible = false
 	hud.add_child(hint)
@@ -2056,13 +2230,114 @@ func _create_hud() -> void:
 	score_label.size = Vector2(600, 20)
 	score_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	score_label.add_theme_font_size_override("font_size", 13)
-	score_label.add_theme_color_override("font_color", Color(0.45, 0.45, 0.55))
+	score_label.add_theme_color_override("font_color", Color(0.6, 0.6, 0.7))
 	game_over_panel.add_child(score_label)
+
+	# Pause panel
+	_create_pause_panel()
 
 	# Mover overlays al frente del HUD
 	hud.move_child(round_intro_label, -1)
 	hud.move_child(fight_intro_label, -1)
 	hud.move_child(flash_overlay, -1)
+
+
+func _create_pause_panel() -> void:
+	pause_panel = Panel.new()
+	pause_panel.position = Vector2(440, 220)
+	pause_panel.size = Vector2(400, 280)
+	pause_panel.visible = false
+	var ps = StyleBoxFlat.new()
+	ps.bg_color = Color(0.02, 0.02, 0.06, 0.95)
+	ps.border_color = Color(0.85, 0.65, 0.2, 0.8)
+	ps.set_border_width_all(2)
+	ps.set_corner_radius_all(12)
+	pause_panel.add_theme_stylebox_override("panel", ps)
+	hud.add_child(pause_panel)
+
+	var title = Label.new()
+	title.text = "PAUSA"
+	title.position = Vector2(0, 30)
+	title.size = Vector2(400, 50)
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.add_theme_font_size_override("font_size", 38)
+	title.add_theme_color_override("font_color", Color(0.9, 0.7, 0.3))
+	pause_panel.add_child(title)
+
+	var opt_reanudar = Label.new()
+	opt_reanudar.name = "OptReanudar"
+	opt_reanudar.text = "Reanudar"
+	opt_reanudar.position = Vector2(0, 110)
+	opt_reanudar.size = Vector2(400, 36)
+	opt_reanudar.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	opt_reanudar.add_theme_font_size_override("font_size", 24)
+	pause_panel.add_child(opt_reanudar)
+
+	var opt_menu = Label.new()
+	opt_menu.name = "OptMenu"
+	opt_menu.text = "Menu Principal"
+	opt_menu.position = Vector2(0, 160)
+	opt_menu.size = Vector2(400, 36)
+	opt_menu.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	opt_menu.add_theme_font_size_override("font_size", 24)
+	pause_panel.add_child(opt_menu)
+
+	var hint = Label.new()
+	hint.text = "Flechas: Navegar | ENTER: Confirmar | ESC: Reanudar"
+	hint.position = Vector2(0, 235)
+	hint.size = Vector2(400, 24)
+	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	hint.add_theme_font_size_override("font_size", 12)
+	hint.add_theme_color_override("font_color", Color(0.5, 0.5, 0.6))
+	pause_panel.add_child(hint)
+
+
+func _toggle_pause() -> void:
+	pause_active = not pause_active
+	pause_panel.visible = pause_active
+	if pause_active:
+		pause_cursor = 0
+		_update_pause_highlight()
+		if is_instance_valid(player1):
+			player1.set_process(false)
+			player1.set_physics_process(false)
+		if is_instance_valid(player2):
+			player2.set_process(false)
+			player2.set_physics_process(false)
+	else:
+		if is_instance_valid(player1):
+			player1.set_process(true)
+			player1.set_physics_process(true)
+		if is_instance_valid(player2):
+			player2.set_process(true)
+			player2.set_physics_process(true)
+
+
+func _update_pause_highlight() -> void:
+	var opt_r = pause_panel.get_node("OptReanudar")
+	var opt_m = pause_panel.get_node("OptMenu")
+	if pause_cursor == 0:
+		opt_r.add_theme_color_override("font_color", Color(1, 0.85, 0.3))
+		opt_m.add_theme_color_override("font_color", Color(0.5, 0.5, 0.55))
+	else:
+		opt_r.add_theme_color_override("font_color", Color(0.5, 0.5, 0.55))
+		opt_m.add_theme_color_override("font_color", Color(1, 0.85, 0.3))
+
+
+func _process_pause() -> void:
+	if Input.is_action_just_pressed("p1_move_up") or Input.is_action_just_pressed("p1_move_down"):
+		pause_cursor = 1 - pause_cursor
+		_update_pause_highlight()
+		AudioManager.play_sfx("select")
+	elif Input.is_action_just_pressed("ui_escape"):
+		_toggle_pause()
+	elif Input.is_action_just_pressed("ui_confirm"):
+		if pause_cursor == 0:
+			_toggle_pause()
+		else:
+			pause_active = false
+			pause_panel.visible = false
+			get_tree().reload_current_scene()
 
 
 func _create_ability_slot(parent: Panel, pos: Vector2, text: String, accent: Color) -> Label:
@@ -2138,17 +2413,17 @@ func _update_slot(lbl: Label, name: String, mana: float, cost: float, cd: float,
 	if cd > 0:
 		# En cooldown - gris con timer
 		lbl.text = "%s  %.1fs" % [name, cd]
-		lbl.add_theme_color_override("font_color", Color(0.35, 0.35, 0.4))
+		lbl.add_theme_color_override("font_color", Color(0.5, 0.5, 0.55))
 		style.bg_color = Color(0.05, 0.05, 0.08, 0.6)
 		style.border_color = Color(0.15, 0.15, 0.2, 0.4)
 	elif mana >= cost:
 		# LISTA - brilla con color fuerte
 		lbl.text = "%s  LISTA" % name
-		var pulse = abs(sin(Time.get_ticks_msec() * 0.003)) * 0.15
+		var pulse = abs(sin(Time.get_ticks_msec() * 0.005)) * 0.3
 		lbl.add_theme_color_override("font_color", color.lightened(0.2 + pulse))
-		style.bg_color = Color(color.r * 0.15, color.g * 0.15, color.b * 0.15, 0.8)
-		style.border_color = Color(color.r * 0.6, color.g * 0.6, color.b * 0.6, 0.7 + pulse)
-		style.set_border_width_all(2)
+		style.bg_color = Color(color.r * 0.15, color.g * 0.15, color.b * 0.15, 0.85 + pulse * 0.15)
+		style.border_color = Color(color.r * 0.8, color.g * 0.8, color.b * 0.8, 0.7 + pulse)
+		style.set_border_width_all(2 + int(pulse * 2))
 	else:
 		# Sin mana suficiente - apagada con cuanto falta
 		var need = int(cost - mana)
@@ -2542,12 +2817,12 @@ func _create_char_select_panel() -> void:
 		Color(0.95, 0.75, 0.1), Color(0.55, 0.15, 0.8), Color(1.0, 0.55, 0.1),
 	]
 	char_select_cards.clear()
-	var total_w = 6 * 78 + 5 * 8
+	var total_w = 6 * 110 + 5 * 10
 	var start_x = (1280 - total_w) / 2.0
 	for i in 6:
 		var card = Panel.new()
-		card.position = Vector2(start_x + float(i) * 86, 610)
-		card.size = Vector2(78, 75)
+		card.position = Vector2(start_x + float(i) * 120, 600)
+		card.size = Vector2(110, 95)
 		var cs = StyleBoxFlat.new()
 		cs.bg_color = Color(card_colors[i].r * 0.2, card_colors[i].g * 0.2, card_colors[i].b * 0.2, 0.9)
 		cs.border_color = card_colors[i].darkened(0.3)
@@ -2558,7 +2833,7 @@ func _create_char_select_panel() -> void:
 
 		# Color circle
 		var cr = ColorRect.new()
-		cr.position = Vector2(27, 8)
+		cr.position = Vector2(43, 10)
 		cr.custom_minimum_size = Vector2(24, 24)
 		cr.size = Vector2(24, 24)
 		cr.color = card_colors[i]
@@ -2567,10 +2842,10 @@ func _create_char_select_panel() -> void:
 		# Name
 		var nl = Label.new()
 		nl.text = card_names[i]
-		nl.position = Vector2(0, 38)
-		nl.size = Vector2(78, 20)
+		nl.position = Vector2(0, 45)
+		nl.size = Vector2(110, 26)
 		nl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		nl.add_theme_font_size_override("font_size", 11)
+		nl.add_theme_font_size_override("font_size", 15)
 		nl.add_theme_color_override("font_color", card_colors[i])
 		card.add_child(nl)
 

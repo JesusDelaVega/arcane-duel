@@ -764,6 +764,12 @@ func _draw_state_effects() -> void:
 
 	if state == State.STUNNED:
 		var hy = -11.0 + _d_vy
+		# Glow dorado pulsante
+		draw_circle(Vector2(0, hy), 22, Color(1, 0.8, 0, sin(anim_time * 6.0) * 0.05 + 0.05))
+		# Espiral de aturdimiento
+		var spiral_a = 0.4 + sin(anim_time * 4.0) * 0.15
+		draw_arc(Vector2(0, hy - 8), 18, anim_time * 5.0, anim_time * 5.0 + TAU * 0.75, 16,
+			Color(1, 1, 0.5, spiral_a * 0.3), 2.0)
 		for i in 4:
 			var a = anim_time * 3.5 + float(i) * TAU / 4.0
 			var sp = Vector2(cos(a), sin(a)) * 15 + Vector2(0, hy - 8)
